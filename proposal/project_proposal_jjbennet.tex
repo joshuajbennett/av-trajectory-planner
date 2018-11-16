@@ -1,0 +1,72 @@
+\documentclass{article}
+
+\usepackage[left=1.25in,top=1.25in,right=1.25in,bottom=1.25in,head=1.25in]{geometry}
+\usepackage{amsfonts,amsmath,amssymb,amsthm}
+\usepackage{verbatim,float,url,enumerate}
+\usepackage{graphicx,subfigure,psfrag}
+\usepackage{natbib}
+\usepackage{environ}
+\usepackage{hyperref}
+\usepackage{pifont}
+\usepackage{xcolor}
+
+\newtheorem{algorithm}{Algorithm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\newcommand{\argmin}{\mathop{\mathrm{argmin}}}
+\newcommand{\argmax}{\mathop{\mathrm{argmax}}}
+\newcommand{\minimize}{\mathop{\mathrm{minimize}}}
+\newcommand{\maximize}{\mathop{\mathrm{maximize}}}
+\newcommand{\st}{\mathop{\mathrm{subject\,\,to}}}
+\newcommand{\dist}{\mathop{\mathrm{dist}}}
+
+\newcommand{\reals}{\mathbb R}
+\newcommand{\prox}{\operatorname{prox}}
+\newcommand{\dom}{\operatorname{dom}}
+\def\R{\mathbb{R}}
+\def\E{\mathbb{E}}
+\def\P{\mathbb{P}}
+\def\Cov{\mathrm{Cov}}
+\def\Var{\mathrm{Var}}
+\def\half{\frac{1}{2}}
+\def\sign{\mathrm{sign}}
+\def\supp{\mathrm{supp}}
+\def\th{\mathrm{th}}
+\def\tr{\mathrm{tr}}
+\def\dim{\mathrm{dim}}
+\def\hbeta{\hat{\beta}}
+
+\begin{document}
+
+\title{Underactuated Robotics 16-748: Project Proposal \\ iLQR for Probabalistic Vehicle Control and Maneuvering}
+\author{\Large Josh Bennett, jjbennet@andrew.cmu.edu}
+\maketitle
+
+\section{Motivation}
+
+Autonomous vehicles need to respond to detected obstacles quickly and handle sensor uncertainty in a safe, reliable way. Planning a path around obstacles is best accomplished by considering both a) the vehicle dynamics, and b) the probability of collision within a close-range window of time. Trajectory optimization effectively incorporates the dynamics model to constrain the set of potential control strategies, but must be augmented with additional constraints to incorporate collision information. The Iterative Linear Quadratic Regulator (ILQR) provides a way to optimize over the set of feasible trajectories due to vehicle dynamics, but must be augmented to handle collision constraints.
+
+\section{Proposal}
+
+Chen et al. \cite{chen_zhan_tomizuka_2017} discuss the use of Constrained iLQR (CILQR) for motion planning in autonomous vehicles. I propose an extension of their work, where uncertainty in collision information is incorporated. Uncertainty in both current position and future trajectory of surrounding obstacles will enable the CILQR algorithm to generate trajectories that are robustified to poor sensor measurements, while enabling lower safety trajectories to stil be executed in the absence of safer paths. The resulting vehicular control system will be 1) robust to sensor noise and error, and 2) fast at finding feasible trajectories.
+
+\section{Research Plan}
+
+I will implement the CILQR algorithm with probabilistic collision constraints as a C++ library. Linking to this library using Python bindings, I will show effective trajectory planning in a set of simulated vehicle scenarios. The project will be considered a success if a) feasible trajectories are consistently generated, b) unavoidable collisions are handled without erratic behaviour, and c) the planner is able to operate at a cycle rate of 20 Hz on modern multi-core processor.
+
+I will first establish a set of baseline navigation scenarios which will act as a gating set of tests for the planner. After establishing this baseline standard, I will implement CILQR and evaluate tests which cause a failure.
+
+\bibliographystyle{plain}
+\bibliography{bibliography.bib}
+\small
+
+
+
+\end{document}
