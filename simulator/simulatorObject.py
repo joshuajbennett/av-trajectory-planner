@@ -18,12 +18,12 @@ class SimObject(ABC):
         pass
 
     def get_start_point(self):
-        if self.waypoints:
+        if np.any(self.waypoints):
             return self.waypoints[0]
         return None
     
     def get_goal_point(self):
-        if self.waypoints:
+        if np.any(self.waypoints):
             return self.waypoints[-1]
         return None
 
@@ -52,7 +52,7 @@ class SimObstacle(SimObject):
         if not dt:
             dt = self.dt
         num = int(self.dt/dt * len(self.waypoints))
-        print(num)
+        # print(num)
         x = self.waypoints[:,0]
         y = self.waypoints[:,1]
         tck, u = splprep([x, y], s=0)
@@ -73,7 +73,7 @@ class SimVehicle(SimObject):
         if not dt:
             dt = self.dt
         num = int(self.dt/dt * len(self.waypoints))
-        print(num)
+        # print(num)
         x = self.waypoints[:,0]
         y = self.waypoints[:,1]
         tck, u = splprep([x, y], s=0)

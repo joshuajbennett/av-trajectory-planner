@@ -8,6 +8,9 @@ phi = np.linspace(0, 2.*np.pi, 40)
 r = 0.5 + np.cos(phi)         # polar coords
 X, Y = r * np.cos(phi), r * np.sin(phi)    # convert to cartesian
 
+X = X * 100 + 100
+Y = Y * 100 + 100
+
 waypoints = np.stack([X,Y], -1)
 
 obstacle = SimObstacle(waypoints)
@@ -27,7 +30,7 @@ ax.plot(obstacleTrajectory[:,0], obstacleTrajectory[:,1], 'r-')
 ax.plot((X, U), (Y, V), 'k-')
 plt.show()
 
-waypoints = np.stack([X,Y], -1)
+waypoints = np.stack([X+100,Y], -1)
 vehicle = SimVehicle(waypoints, heading, dt=0.5)
 
 vehicle.create_trajectory(dt=0.2)
@@ -44,3 +47,6 @@ ax.plot(vehicleWaypoints[:,0], vehicleWaypoints[:,1], 'ro')
 ax.plot(vehicleTrajectory[:,0], vehicleTrajectory[:,1], 'r-')
 ax.plot((X, U), (Y, V), 'k-')
 plt.show()
+
+np.savetxt("obstacleWaypoints.txt", obstacleWaypoints)
+np.savetxt("vehicleTrajectory.txt", vehicleTrajectory)
