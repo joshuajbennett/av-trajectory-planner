@@ -61,7 +61,7 @@ class Simulator(Widget):
 
         vehicleTrajectory = np.loadtxt(vehicleTrajectoryFile)
         self.actorVehicle.initialize(vehicleTrajectory)
-        
+
     def update(self, dt):
         self.actorVehicle.move()
         self.obstacle0.move()
