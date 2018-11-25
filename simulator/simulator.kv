@@ -1,0 +1,41 @@
+#:kivy 1.0.9
+
+<Obstacle>:
+    size: 50, 25 
+    canvas.before:
+        PushMatrix
+        Rotate:
+            axis: 0,0,1
+            angle: self.angle
+            origin: self.center
+    canvas:
+        Ellipse:
+            pos: self.pos
+            size: self.size          
+    canvas.after:
+        PopMatrix
+
+<Vehicle>:
+    size: 50, 25
+    canvas.before:
+        PushMatrix
+        Rotate:
+            axis: 0,0,1
+            angle: self.angle
+            origin: self.center
+    canvas:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    canvas.after:
+        PopMatrix
+
+<Simulator>:
+    actorVehicle: actor_vehicle
+    obstacle0: obstacle_0
+    
+    Vehicle:
+        id: actor_vehicle
+        
+    Obstacle:
+        id: obstacle_0
