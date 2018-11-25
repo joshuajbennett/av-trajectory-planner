@@ -17,6 +17,7 @@ class Obstacle(Widget):
     trajGenerator = None
     angle = NumericProperty(0)
     radangle = NumericProperty(0)
+    point = []
 
     def initialize(self, waypoints):
         self.obstacle = SimObstacle(waypoints, dt=0.2)
@@ -26,9 +27,9 @@ class Obstacle(Widget):
         self.pos = [float(start_pos[0]), float(start_pos[1])]
 
     def move(self):
-        point = next(self.trajGenerator, self.pos + [self.radangle])
-        self.pos = [float(point[0])-25, float(point[1])-12.5]
-        self.radangle = float(point[2])
+        self.point = next(self.trajGenerator, self.point)
+        self.pos = [float(self.point[0]) - 25, float(self.point[1]) - 12.5]
+        self.radangle = float(self.point[2])
         self.angle = float(np.degrees(self.radangle))
 
 class Vehicle(Widget):
@@ -36,20 +37,21 @@ class Vehicle(Widget):
     trajGenerator = None
     angle = NumericProperty(0)
     radangle = NumericProperty(0)
+    point = []
 
     def initialize(self, trajecory):
         waypoints = trajecory[:, 0:2]
         headings = trajecory[:, 2]
-        self.vehicle = SimVehicle(waypoints, headings, dt=0.2)
+        self.vehicle = SimVehicle(waypoints, headings, dt=0.05)
         self.vehicle.create_trajectory(dt=dt)
         self.trajGenerator = self.vehicle.trajectory_generator()
         start_pos = self.vehicle.get_start_point()
         self.pos = [float(start_pos[0]), float(start_pos[1])]
 
     def move(self):
-        point = next(self.trajGenerator, self.pos + [self.radangle])
-        self.pos = [float(point[0]) - 25, float(point[1]) - 12.5]
-        self.radangle = float(point[2])
+        self.point = next(self.trajGenerator, self.point)
+        self.pos = [float(self.point[0]) - 25, float(self.point[1]) - 12.5]
+        self.radangle = float(self.point[2])
         self.angle = float(np.degrees(self.radangle))
 
 class Simulator(Widget):
@@ -85,7 +87,12 @@ class Simulator(Widget):
             print(points)
             with self.canvas:
                 Color(1, 0, 1, 0.8)
-                Line(points=points, width=2)
+                Line(points=points, width=1, dash_length=10, dash_offset=10)
+        vehicleTrajectory = self.actorVehicle.vehicle.get_trajectory()
+        points = self.create_line_point(vehicleTrajectory)
+        with self.canvas:
+            Color(0, 1, 0, 0.8)
+            Line(points=points, width=1, dash_length=10, dash_offset=10)
 
         
     def update(self, dt):
