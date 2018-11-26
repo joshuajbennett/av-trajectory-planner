@@ -1,8 +1,8 @@
 #ifndef AVTRAJECTORYPLANNER_HPP
 #define AVTRAJECTORYPLANNER_HPP
 
+#include <math.h>
 #include <vector>
-
 namespace av_trajectory_planner
 {
 
@@ -25,6 +25,8 @@ struct AvParams
 {
 	double l_r;
 	double l_f;
+	double max_delta_f;
+	double max_accel_f;
 };
 
 ///
@@ -65,6 +67,15 @@ struct ObstacleTrajectory
 };
 
 ///
+/// A static obstacle.
+///
+struct ObstacleStatic
+{
+	Boundary obs_outline;
+	Pose obs_pose;
+};
+
+///
 /// An AV trajectory.
 ///
 struct AvTrajectory
@@ -85,7 +96,53 @@ class Planner
 public:
 	Planner();
 
+	Planner(AvState init,
+			AvState goal,
+			AvParams config,
+			Boundary av_outline,
+			double max_time = 5.0,
+			double dt = 0.01);
+
 	~Planner();
+
+	void setGoal(AvState goal);
+
+	void setInitialState(AvState init);
+
+	void setVehicleConfig(AvParams config);
+
+	void clearObstacles();
+
+	void appendObstacleTrajectory(ObstacleTrajectory obstacle);
+
+	void appendObstacleStatic(ObstacleStatic obstacle);
+
+	void setSolverMaxTime(double max_time);
+
+	void setSolverTimeStep(double dt);
+
+	AvTrajectory solveTrajectory();
+
+private:
+	AvState dynamics(AvState, double, double);
+
+	AvState apply_dynamics(AvState, AvState, double);
+
+	AvState euler_step_unforced(AvState input, double dt);
+
+	AvState initial_state;
+
+	AvState goal_state;
+
+	AvParams vehicle_config;
+
+	Boundary vehicle_outline;
+
+	std::vector<ObstacleTrajectory> obstacles;
+
+	double solver_max_time;
+
+	double solver_dt;
 };
 } // namespace av_trajectory_planner
 

@@ -5,6 +5,7 @@
 #include <numpy/ndarrayobject.h>
 #include <numpy/npy_math.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
@@ -49,7 +50,9 @@ PYBIND11_MODULE(AvTrajectoryPlanner, m)
 	py::class_<AvParams>(m, "AvParams")
 		.def(py::init<>())
 		.def_readwrite("l_r", &AvParams::l_r)
-		.def_readwrite("l_f", &AvParams::l_f);
+		.def_readwrite("l_f", &AvParams::l_r)
+		.def_readwrite("max_delta_f", &AvParams::max_delta_f)
+		.def_readwrite("max_accel_f", &AvParams::max_accel_f);
 	py::class_<Point>(m, "Point")
 		.def(py::init<>())
 		.def_readwrite("x", &Point::x)
@@ -67,6 +70,10 @@ PYBIND11_MODULE(AvTrajectoryPlanner, m)
 		.def_readwrite("obs_outline", &ObstacleTrajectory::obs_outline)
 		.def_readwrite("pose_table", &ObstacleTrajectory::pose_table)
 		.def_readwrite("dt", &ObstacleTrajectory::dt);
+	py::class_<ObstacleStatic>(m, "ObstacleStatic")
+		.def(py::init<>())
+		.def_readwrite("obs_outline", &ObstacleStatic::obs_outline)
+		.def_readwrite("obs_pose", &ObstacleStatic::obs_pose);
 	py::class_<AvTrajectory>(m, "AvTrajectory")
 		.def(py::init<>())
 		.def_readwrite("av_outline", &AvTrajectory::av_outline)
