@@ -26,5 +26,12 @@ using namespace av_trajectory_planner;
 
 PYBIND11_MODULE(AvTrajectoryPlanner, m)
 {
+	py::class_<AvState>(m, "AvState").def(py::init<>());
+	py::class_<AvParams>(m, "AvParams").def(py::init<>());
+	py::class_<Point>(m, "Point").def(py::init<>());
+	py::class_<Boundary>(m, "Boundary").def(py::init<>());
+	py::class_<Pose>(m, "Pose").def(py::init<>());
+	py::class_<ObstacleTrajectory>(m, "ObstacleTrajectory").def(py::init<>());
+	py::class_<AvTrajectory>(m, "AvTrajectory").def(py::init<>());
 	py::class_<PlannerPython>(m, "Planner").def(py::init<>());
 }
