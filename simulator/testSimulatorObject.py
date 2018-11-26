@@ -8,7 +8,7 @@ phi = np.linspace(0, 2.*np.pi, 40)
 r = 0.5 + np.cos(phi)         # polar coords
 X, Y = r * np.cos(phi), r * np.sin(phi)    # convert to cartesian
 
-X = X * 100 + 100
+X = X * 50 + 100
 Y = Y * 100 + 100
 
 waypoints = np.stack([X,Y], -1)
@@ -48,5 +48,5 @@ ax.plot(vehicleTrajectory[:,0], vehicleTrajectory[:,1], 'r-')
 ax.plot((X, U), (Y, V), 'k-')
 plt.show()
 
-np.savetxt("obstacleWaypoints.txt", obstacleWaypoints)
-np.savetxt("vehicleTrajectory.txt", vehicleTrajectory)
+np.savetxt("obstacleWaypoints1.txt", obstacleWaypoints)
+# np.savetxt("vehicleTrajectory.txt", vehicleTrajectory)

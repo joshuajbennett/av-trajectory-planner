@@ -9,6 +9,8 @@
             angle: self.angle
             origin: self.center
     canvas:
+        Color:
+            rgba: 1, 0, 1, 0.8
         Ellipse:
             pos: self.pos
             size: self.size          
@@ -24,6 +26,8 @@
             angle: self.angle
             origin: self.center
     canvas:
+        Color:
+            rgba: 0, 1, 0, 0.8
         Rectangle:
             pos: self.pos
             size: self.size
@@ -32,10 +36,6 @@
 
 <Simulator>:
     actorVehicle: actor_vehicle
-    obstacle0: obstacle_0
-    
+
     Vehicle:
         id: actor_vehicle
-        
-    Obstacle:
-        id: obstacle_0
