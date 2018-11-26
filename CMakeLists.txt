@@ -13,7 +13,7 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
-add_library(AvTrajectoryPlanner SHARED src/lib/AvTrajectoryPlanner.cpp)
+add_library(AvTrajectoryPlanner SHARED src/lib_cpp/AvTrajectoryPlanner.cpp)
 
 target_include_directories(AvTrajectoryPlanner PRIVATE ${JSONCPP_INCLUDE_DIRS})
 target_link_libraries(AvTrajectoryPlanner ${JSONCPP_LIBRARIES})
