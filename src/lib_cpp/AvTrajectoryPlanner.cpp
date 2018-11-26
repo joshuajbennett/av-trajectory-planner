@@ -6,30 +6,17 @@
 
 namespace av_trajectory_planner
 {
-
-Planner::Planner()
-	: initial_state {0, 0, 0, 0, 0}
-	, goal_state {1, 0, 0, 0, 0}
-	, vehicle_config {0.5, 0.5, 0.3, 4.0}
-	, solver_max_time {5.0}
-	, solver_dt {0.01}
-{
-	vehicle_outline.vertices.push_back(Point {0.5, 0.5});
-	vehicle_outline.vertices.push_back(Point {0.5, -0.5});
-	vehicle_outline.vertices.push_back(Point {-0.5, -0.5});
-	vehicle_outline.vertices.push_back(Point {-0.5, 0.5});
-}
+Planner::Planner() {}
 
 Planner::Planner(
 	AvState init, AvState goal, AvParams config, Boundary av_outline, double max_time, double dt)
-{
-	initial_state = init;
-	goal_state = goal;
-	vehicle_config = config;
-	vehicle_outline = av_outline;
-	solver_max_time = max_time;
-	solver_dt = dt;
-}
+	: initial_state {init}
+	, goal_state {goal}
+	, vehicle_config {config}
+	, vehicle_outline {av_outline}
+	, solver_max_time {max_time}
+	, solver_dt {dt}
+{}
 
 Planner::~Planner() {}
 
@@ -46,6 +33,11 @@ void Planner::setInitialState(AvState init)
 void Planner::setVehicleConfig(AvParams config)
 {
 	vehicle_config = config;
+}
+
+void Planner::setVehicleOutline(Boundary av_outline)
+{
+	vehicle_outline = av_outline;
 }
 
 void Planner::clearObstacles()
@@ -114,7 +106,7 @@ AvState Planner::apply_dynamics(AvState input, AvState current_dynamics, double 
 	output.y = input.y + dt * current_dynamics.y;
 	output.psi = input.psi + dt * current_dynamics.psi;
 	output.delta_f = input.delta_f + dt * current_dynamics.delta_f;
-	output.delta_f = input.delta_f + dt * current_dynamics.delta_f;
+	output.vel_f = input.vel_f + dt * current_dynamics.vel_f;
 	return (std::move(output));
 }
 

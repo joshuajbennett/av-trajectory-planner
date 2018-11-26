@@ -16,6 +16,20 @@ struct AvState
 	double psi;
 	double delta_f;
 	double vel_f;
+
+	AvState operator*(float val)
+	{
+		return AvState {x * val, y * val, psi * val, delta_f * val, vel_f * val};
+	}
+
+	AvState operator+(AvState state)
+	{
+		return AvState {x + state.x,
+						y + state.y,
+						psi + state.psi,
+						delta_f + state.delta_f,
+						vel_f + state.vel_f};
+	}
 };
 
 ///
@@ -84,6 +98,27 @@ struct AvTrajectory
 	std::vector<AvState> av_state_table;
 	double dt;
 	AvParams av_parameters;
+
+	AvState interpolate(double time)
+	{
+		if(time < 0)
+		{
+			return std::move(av_state_table[0]);
+		}
+		else if(time >= (av_state_table.size() - 1) * dt)
+		{
+			return std::move(av_state_table[av_state_table.size() - 1]);
+		}
+		else
+		{
+			int first_pos = std::floor(time / dt);
+			AvState first = av_state_table[first_pos];
+			AvState second = av_state_table[first_pos + 1];
+			double dist = time / dt - first_pos;
+			double inv_dist = 1.0 - dist;
+			return std::move(first * inv_dist + second * dist);
+		}
+	}
 };
 
 ///
@@ -110,6 +145,8 @@ public:
 	void setInitialState(AvState init);
 
 	void setVehicleConfig(AvParams config);
+
+	void setVehicleOutline(Boundary av_outline);
 
 	void clearObstacles();
 
