@@ -25,16 +25,6 @@ target_link_libraries(tests AvTrajectoryPlanner ${JSONCPP_LIBRARIES})
 
 add_subdirectory(pybind11)
 
-find_package(PythonInterp 2.7)
-message(${PYTHON_EXECUTABLE})
-
-# Need to search for python executable again to pick up an activated
-# virtualenv python, if any.
-unset(PYTHON_EXECUTABLE CACHE)
-find_program(PYTHON_EXECUTABLE python
-      PATHS ENV PATH         # look in the PATH environment variable
-      NO_DEFAULT_PATH        # do not look anywhere else...
-      )
 # Make FindNumPy available
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 find_package(NumPy REQUIRED)

@@ -1,7 +1,6 @@
 import sys
 sys.path.append('build')
-import AvTrajectoryPlanner
-from AvTrajectoryPlanner import *
+import AvTrajectoryPlanner as avplanner
 import math
 
 import pdb
