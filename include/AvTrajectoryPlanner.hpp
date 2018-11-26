@@ -75,6 +75,9 @@ struct AvTrajectory
 	AvParams av_parameters;
 };
 
+///
+/// The class for handling trajectory optimization.
+///
 class Planner
 {
 	friend class PlannerPython;

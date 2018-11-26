@@ -44,5 +44,5 @@ target_include_directories(AvTrajectoryPlannerPython PRIVATE ${NUMPY_INCLUDES})
 target_link_libraries(AvTrajectoryPlannerPython PRIVATE AvTrajectoryPlanner)
 set_target_properties(AvTrajectoryPlannerPython
   PROPERTIES
-  OUTPUT_NAME MatterSim)
+  OUTPUT_NAME AvTrajectoryPlanner)
 
