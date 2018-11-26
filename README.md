@@ -6,22 +6,21 @@ Project for 16-748 implementing CILQR for real-time vehicle trajectory planning.
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 
+### Setup
 
-### Prerequisites
-
-This project was tested on Ubuntu 16.04 and has the following prerequisite
+This project was tested on Ubuntu 16.04. Follow the setup guide below for the Planner and Simulator.
 
 #### Planner
 ```
 sudo apt update
-sudo apt install cmake \
-                 build-essential \
-                 python3-dev \
-                 pkg-config \
-                 libjsoncpp-dev \
-                 python3-pip y
+sudo apt install -y cmake \
+    build-essential \
+    python3-dev \
+    pkg-config \
+    libjsoncpp-dev \
+    python3-pip 
              
-pip3 install numpy
+pip3 install numpy==1.11.0
                  
 ```
 
@@ -47,20 +46,41 @@ make
 ```
 
 #### Simulator
+```
+sudo apt install -y ffmpeg \
+    libsdl2-dev \
+    libsdl2-image-dev \
+    libsdl2-mixer-dev \
+    libsdl2-ttf-dev \
+    libportmidi-dev \
+    libswscale-dev \
+    libavformat-dev \
+    libavcodec-dev \
+    zlib1g-dev \
+    libmtdev-dev
+    
+sudo apt install -y \
+    libgstreamer1.0 \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good
+    
+pip3 install -I Cython==0.28.2 
+pip3 install matplotlib==3.0.2
+pip3 install numpy==1.11.0
+pip3 install scipy
+pip3 install kivy
+
+```
 
 * Kivy 1.0.9
 * Numpy 1.11.0
 * Matplotlib 3.0.2
-* Pythoon 3.x
+* Python 3.x
 
-You can install Kivy by following the instructions on this website https://kivy.org/doc/stable/installation/installation-linux.html
+You can also install Kivy by following the instructions on this website https://kivy.org/doc/stable/installation/installation-linux.html
 
-```
-pip install matplotlib==3.0.2
-pip install numpy==1.11.0
-```
 
-#### Solver
+### Solver
 
 ```
 Give examples
