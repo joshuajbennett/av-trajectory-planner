@@ -133,7 +133,8 @@ PYBIND11_MODULE(AvTrajectoryPlanner, m)
 		.def(py::init<>())
 		.def_readwrite("obs_outline", &ObstacleTrajectory::obs_outline)
 		.def_readwrite("pose_table", &ObstacleTrajectory::pose_table)
-		.def_readwrite("dt", &ObstacleTrajectory::dt);
+		.def_readwrite("dt", &ObstacleTrajectory::dt)
+		.def("interpolate", &ObstacleTrajectory::interpolate);
 	py::class_<ObstacleStatic>(m, "ObstacleStatic")
 		.def(py::init<>())
 		.def_readwrite("obs_outline", &ObstacleStatic::obs_outline)
