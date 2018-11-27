@@ -19,7 +19,7 @@ struct AvState
 	double delta_f;
 	double vel_f;
 
-	AvState operator*(float val)
+	AvState operator*(double val)
 	{
 		return std::move(AvState {x * val, y * val, psi * val, delta_f * val, vel_f * val});
 	}
@@ -194,7 +194,7 @@ struct ObstacleTrajectory
 		}
 		else
 		{
-			int first_pos = std::floor(time / dt);
+			int first_pos = floor(time / dt);
 			Pose first = pose_table[first_pos];
 			Pose second = pose_table[first_pos + 1];
 			double dist = time / dt - first_pos;
@@ -276,7 +276,7 @@ struct AvTrajectory
 		}
 		else
 		{
-			int first_pos = std::floor(time / dt);
+			int first_pos = floor(time / dt);
 			AvState first = av_state_table[first_pos];
 			AvState second = av_state_table[first_pos + 1];
 			double dist = time / dt - first_pos;
