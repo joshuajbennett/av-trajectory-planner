@@ -157,8 +157,6 @@ struct AvTrajectory
 ///
 class Planner
 {
-	friend class PlannerPython;
-
 public:
 	Planner();
 
