@@ -132,6 +132,7 @@ struct Boundary
 		{
 			point_list.append(point.saveToJson());
 		}
+		json["vertices"] = point_list;
 		return json;
 	}
 };
