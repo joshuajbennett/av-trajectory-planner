@@ -30,6 +30,15 @@ class PlannerPython
 public:
 	PlannerPython() {}
 
+	PlannerPython(AvState init,
+				  AvState goal,
+				  AvParams config,
+				  Boundary av_outline,
+				  double max_time = 5.0,
+				  double dt = 0.01)
+		: planner(init, goal, config, av_outline, max_time, dt)
+	{}
+
 	void setGoal(AvState goal)
 	{
 		planner.setGoal(goal);
@@ -106,6 +115,7 @@ PYBIND11_MODULE(AvTrajectoryPlanner, m)
 {
 	py::class_<AvState>(m, "AvState")
 		.def(py::init<>())
+		.def(py::init<double, double, double, double, double>())
 		.def_readwrite("x", &AvState::x)
 		.def_readwrite("y", &AvState::y)
 		.def_readwrite("psi", &AvState::psi)
@@ -113,34 +123,41 @@ PYBIND11_MODULE(AvTrajectoryPlanner, m)
 		.def_readwrite("vel_f", &AvState::vel_f);
 	py::class_<AvParams>(m, "AvParams")
 		.def(py::init<>())
+		.def(py::init<double, double, double, double>())
 		.def_readwrite("l_r", &AvParams::l_r)
 		.def_readwrite("l_f", &AvParams::l_r)
 		.def_readwrite("max_delta_f", &AvParams::max_delta_f)
 		.def_readwrite("max_accel_f", &AvParams::max_accel_f);
 	py::class_<Point>(m, "Point")
 		.def(py::init<>())
+		.def(py::init<double, double>())
 		.def_readwrite("x", &Point::x)
 		.def_readwrite("y", &Point::y);
 	py::class_<Boundary>(m, "Boundary")
 		.def(py::init<>())
+		.def(py::init<std::vector<Point>>())
 		.def_readwrite("vertices", &Boundary::vertices);
 	py::class_<Pose>(m, "Pose")
 		.def(py::init<>())
+		.def(py::init<double, double, double>())
 		.def_readwrite("x", &Pose::x)
 		.def_readwrite("y", &Pose::y)
 		.def_readwrite("theta", &Pose::theta);
 	py::class_<ObstacleTrajectory>(m, "ObstacleTrajectory")
 		.def(py::init<>())
+		.def(py::init<Boundary, std::vector<Pose>, double>())
 		.def_readwrite("obs_outline", &ObstacleTrajectory::obs_outline)
 		.def_readwrite("pose_table", &ObstacleTrajectory::pose_table)
 		.def_readwrite("dt", &ObstacleTrajectory::dt)
 		.def("interpolate", &ObstacleTrajectory::interpolate);
 	py::class_<ObstacleStatic>(m, "ObstacleStatic")
 		.def(py::init<>())
+		.def(py::init<Boundary, Pose>())
 		.def_readwrite("obs_outline", &ObstacleStatic::obs_outline)
 		.def_readwrite("obs_pose", &ObstacleStatic::obs_pose);
 	py::class_<AvTrajectory>(m, "AvTrajectory")
 		.def(py::init<>())
+		.def(py::init<Boundary, std::vector<AvState>, double, AvParams>())
 		.def_readwrite("av_outline", &AvTrajectory::av_outline)
 		.def_readwrite("av_state_table", &AvTrajectory::av_state_table)
 		.def_readwrite("dt", &AvTrajectory::dt)
@@ -148,6 +165,7 @@ PYBIND11_MODULE(AvTrajectoryPlanner, m)
 		.def("interpolate", &AvTrajectory::interpolate);
 	py::class_<PlannerPython>(m, "Planner")
 		.def(py::init<>())
+		.def(py::init<AvState, AvState, AvParams, Boundary, double, double>())
 		.def("setGoal", &PlannerPython::setGoal)
 		.def("setInitialState", &PlannerPython::setInitialState)
 		.def("clearObstacles", &PlannerPython::clearObstacles)

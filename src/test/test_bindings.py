@@ -4,36 +4,12 @@ import AvTrajectoryPlanner as av
 import math
 import pdb
 
-planner = av.Planner()
-planner.setSolverMaxTime(10.0)
-planner.setSolverTimeStep(0.1)
-planner.setInitialState(av.AvState())
+planner = av.Planner(av.AvState(0,0,0,0,0), av.AvState(5,1,0,0,0), av.AvParams(1,1,1,5), av.Boundary([av.Point(0.5,0.5), av.Point(-0.5, 0.5), av.Point(-0.5, -0.5), av.Point(-0.5, 0.5)]), 10, 0.1)
 
-goal = av.AvState()
-goal.x = 5
-goal.y = 1
-planner.setGoal(goal)
 
 obstacle = av.ObstacleStatic()
-
-outline = av.Boundary()
-point = av.Point()
-point.x = 0.5
-point.y = 0.5
-outline.vertices.append(point)
-point.x = -0.5
-outline.vertices.append(point)
-point.y = -0.5
-outline.vertices.append(point)
-point.y = 0.5
-outline.vertices.append(point)
-obstacle.obs_outline = outline
-
-pose = av.Pose()
-pose.x = 3
-pose.y = 0.5
-pose.theta = 0.8
-obstacle.obs_pose = pose
+obstacle.obs_outline = av.Boundary([av.Point(0.5,0.2), av.Point(-0.5, 0.2), av.Point(-0.5, -0.2), av.Point(-0.5, 0.2)])
+obstacle.obs_pose = av.Pose(3,0.5, 0.8)
 
 planner.appendObstacleStatic(obstacle)
 
