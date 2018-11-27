@@ -71,6 +71,9 @@ PYBIND11_MODULE(AvTrajectoryPlanner, m)
 		.def("clearObstacles", &Planner::clearObstacles)
 		.def("appendObstacleTrajectory", &Planner::appendObstacleTrajectory)
 		.def("appendObstacleStatic", &Planner::appendObstacleStatic)
+		.def("getObstacleTrajectories",
+			 &Planner::getObstacleTrajectories,
+			 py::return_value_policy::take_ownership)
 		.def("setSolverMaxTime", &Planner::setSolverMaxTime)
 		.def("setSolverTimeStep", &Planner::setSolverTimeStep)
 		.def("solveTrajectory", &Planner::solveTrajectory, py::return_value_policy::take_ownership)

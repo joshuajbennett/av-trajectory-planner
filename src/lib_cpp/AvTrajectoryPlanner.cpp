@@ -59,6 +59,11 @@ void Planner::appendObstacleStatic(ObstacleStatic obs_static)
 	obstacles.push_back(std::move(static_traj));
 }
 
+std::vector<ObstacleTrajectory> Planner::getObstacleTrajectories()
+{
+	return obstacles;
+}
+
 void Planner::setSolverMaxTime(double max_time)
 {
 	solver_max_time = max_time;
@@ -147,11 +152,7 @@ AvState Planner::dynamics(AvState input, double turn_rate, double accel_f)
 AvState Planner::apply_dynamics(AvState input, AvState current_dynamics, double dt)
 {
 	AvState output;
-	output.x = input.x + dt * current_dynamics.x;
-	output.y = input.y + dt * current_dynamics.y;
-	output.psi = input.psi + dt * current_dynamics.psi;
-	output.delta_f = input.delta_f + dt * current_dynamics.delta_f;
-	output.vel_f = input.vel_f + dt * current_dynamics.vel_f;
+	output = input + current_dynamics * dt;
 	return (std::move(output));
 }
 

@@ -146,7 +146,7 @@ struct Pose
 	double y;
 	double theta;
 
-	Pose operator*(float val)
+	Pose operator*(double val)
 	{
 		return std::move(Pose {x * val, y * val, theta * val});
 	}
@@ -345,6 +345,8 @@ public:
 	void appendObstacleTrajectory(ObstacleTrajectory obstacle);
 
 	void appendObstacleStatic(ObstacleStatic obstacle);
+
+	std::vector<ObstacleTrajectory> getObstacleTrajectories();
 
 	void setSolverMaxTime(double max_time);
 
