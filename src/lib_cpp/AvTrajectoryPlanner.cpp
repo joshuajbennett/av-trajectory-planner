@@ -2,7 +2,6 @@
 #include <iostream>
 
 #include "AvTrajectoryPlanner.hpp"
-#include <json/json.h>
 
 namespace av_trajectory_planner
 {
@@ -68,6 +67,52 @@ void Planner::setSolverMaxTime(double max_time)
 void Planner::setSolverTimeStep(double dt)
 {
 	solver_dt = dt;
+}
+
+void Planner::loadFromJson(std::string raw_json)
+{
+	Json::Value root;
+	Json::Reader reader;
+	bool parsingSuccessful = reader.parse(raw_json, root);
+	if(!parsingSuccessful)
+	{
+		// report to the user the failure and their locations in the document.
+		std::cout << "Failed to parse configuration\n" << reader.getFormattedErrorMessages();
+		return;
+	}
+	initial_state.loadFromJson(root["initial_state"]);
+	goal_state.loadFromJson(root["goal_state"]);
+	vehicle_config.loadFromJson(root["vehicle_config"]);
+	vehicle_outline.loadFromJson(root["vehicle_outline"]);
+	obstacles.resize(0);
+	for(auto obstacle : root["obstacles"])
+	{
+		ObstacleTrajectory temp_obstacle;
+		temp_obstacle.loadFromJson(obstacle);
+		obstacles.push_back(temp_obstacle);
+	}
+	solver_max_time = root.get("solver_max_time", 5.0).asDouble();
+	solver_dt = root.get("solver_dt", 0.01).asDouble();
+}
+
+std::string Planner::saveToJson()
+{
+	Json::Value root;
+	root["initial_state"] = initial_state.saveToJson();
+	root["goal_state"] = goal_state.saveToJson();
+	root["vehicle_config"] = vehicle_config.saveToJson();
+	root["vehicle_outline"] = vehicle_outline.saveToJson();
+	Json::Value obstacle_list;
+	for(auto obstacle : obstacles)
+	{
+		obstacle_list.append(obstacle.saveToJson());
+	}
+	root["obstacles"] = obstacle_list;
+	root["solver_max_time"] = solver_max_time;
+	root["solver_dt"] = solver_dt;
+
+	Json::StyledWriter writer;
+	return writer.write(root);
 }
 
 AvTrajectory Planner::solveTrajectory()

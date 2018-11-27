@@ -73,5 +73,7 @@ PYBIND11_MODULE(AvTrajectoryPlanner, m)
 		.def("appendObstacleStatic", &Planner::appendObstacleStatic)
 		.def("setSolverMaxTime", &Planner::setSolverMaxTime)
 		.def("setSolverTimeStep", &Planner::setSolverTimeStep)
-		.def("solveTrajectory", &Planner::solveTrajectory, py::return_value_policy::take_ownership);
+		.def("solveTrajectory", &Planner::solveTrajectory, py::return_value_policy::take_ownership)
+		.def("saveToJson", &Planner::saveToJson, py::return_value_policy::take_ownership)
+		.def("loadFromJson", &Planner::loadFromJson);
 }
