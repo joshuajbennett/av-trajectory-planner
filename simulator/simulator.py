@@ -10,7 +10,14 @@ import numpy as np
 from kivy.config import Config
 from kivy.core.window import Window
 
-dt = 1.0/60.0
+import sys
+sys.path.append('../build')
+import AvTrajectoryPlanner as av
+import argparse
+
+parser = argparse.ArgumentParser(description='Av Trajectory Planner Simulator')
+parser.add_argument("-f", "--envFile", type=str, default="sample_trajectory.txt", help='json file that stores the environment variable that will be used to populate the planner')
+args = parser.parse_args()
 
 class Obstacle(Widget):
     obstacle = None
@@ -19,7 +26,7 @@ class Obstacle(Widget):
     radangle = NumericProperty(0)
     point = []
 
-    def initialize(self, waypoints):
+    def initialize(self, waypoints, dt = 1):
         self.obstacle = SimObstacle(waypoints, dt=0.2)
         self.obstacle.create_trajectory(dt=dt)
         self.trajGenerator = self.obstacle.trajectory_generator()
@@ -39,7 +46,7 @@ class Vehicle(Widget):
     radangle = NumericProperty(0)
     point = []
 
-    def initialize(self, trajecory):
+    def initialize(self, trajecory, dt = 1):
         waypoints = trajecory[:, 0:2]
         headings = trajecory[:, 2]
         self.vehicle = SimVehicle(waypoints, headings, dt=0.05)
@@ -65,19 +72,23 @@ class Simulator(Widget):
             points += [float(traj[0]), float(traj[1])]
         return points
 
-    def begin(self, vehicleTrajectoryFile, obstacleWaypointsFileList):
-        for obstacleWaypointsFile in obstacleWaypointsFileList:
-            obstacleWaypoints = np.loadtxt(obstacleWaypointsFile)
+    def begin(self, avPlanner):
+        obstacleTrajectories = avPlanner.getObstacleTrajectories()
+        for avTrajectory in obstacleTrajectories:
+            poseTable = avTrajectory.poseTable
+            obstacleWaypoints = np.asarray([[pose.x, pose.y] for pose in poseTable])
+            obstacleDt = avTrajectory.dt;
             obstacle = Obstacle()
             self.add_widget(obstacle)
-            obstacle.initialize(obstacleWaypoints)
+            obstacle.initialize(obstacleWaypoints, obstacleDt)
             self.obstacles.append(obstacle)
+            print(obstacleWaypoints)
 
-        # self.add_widget(self.obstacles)
-
-        vehicleTrajectory = np.loadtxt(vehicleTrajectoryFile)
-        self.actorVehicle.initialize(vehicleTrajectory)
-
+        vehicleTrajectory = avPlanner.solveTrajectory()
+        vehicleDt = vehicleTrajectory.dt
+        vehicleWaypoints = np.asarray([[state.x, state.y, state.psi] for state in vehicleTrajectory.av_state_table])
+        self.actorVehicle.initialize(vehicleWaypoints, vehicleDt)
+        print(vehicleWaypoints)
         self.draw_trajectory()
 
     def draw_trajectory(self):
@@ -106,12 +117,14 @@ class SimulatorApp(App):
 
     def build(self):
         sim = Simulator()
-        sim.begin("vehicleTrajectory.txt", ["obstacleWaypoints.txt", "obstacleWaypoints1.txt"])
-        Clock.schedule_interval(sim.update, dt)
+        sim.begin(planner)
+        Clock.schedule_interval(sim.update, 1.0/60.0)
         return sim
 
 
 if __name__ == '__main__':
+    planner = av.Planner()
+    planner.loadFromJson(args.envFile)
     Config.set('graphics', 'resizable', False)
     Window.size = (500, 300)
     Window.clearcolor = (1, 1, 1, 1)
