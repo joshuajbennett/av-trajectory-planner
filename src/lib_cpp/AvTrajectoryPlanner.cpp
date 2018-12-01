@@ -122,10 +122,45 @@ std::string Planner::saveToJson()
 
 AvTrajectory Planner::solveTrajectory()
 {
+	// Initialize the desired trajectory (a trajectory of all goal states)
+	// Initialize nominal
+	//
+	// Define optimality epsilon
+	//
+	// Initial Q and R
+	//
+	// iterations of iLQR
+	//
+	//     get x_bar and u_bar desired
+	//
+	//     Initialize Ricatti variables S2, S1, S0
+	//
+	//     Linearize dynamics
+	//
+	//     Solve Ricatti backwards in time
+	//          Get our current Ricattie Variables
+	//          Linearize our system dynamics
+	//          Step S2, S1, and S0
+	//          Save S2, S1, and S0
+	//
+	//     Run forward prediction using Ricatti Solution
+	//
+	//          Compute linearization fo B
+	//
+	//          Get the Ricatti variables at this time step
+	//
+	//          calculate u bar star
+	//
+	//          convert to  u actual
+	//
+	//          update x actual (Euler method)
+	//     Check for convergence based on epsilon
+	// Return a trajectory
+
 	// Produce a dummy solution for now.
 	AvTrajectory traj;
 	traj.outline = vehicle_outline;
-	AvState av_state {0, 0, 0.3, 0, 1.0};
+	AvState av_state {0, 0, 0.3, -0.3, 1.0};
 	traj.table.push_back(av_state);
 	double dt = 0.1;
 	for(int i = 0; i < 100; i++)
