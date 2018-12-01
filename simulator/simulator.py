@@ -18,7 +18,6 @@ import argparse
 simDt = 1.0/30.0
 
 parser = argparse.ArgumentParser(description='Av Trajectory Planner Simulator')
-
 parser.add_argument("-e", "--envFile", type=str, default="sample_trajectory.txt", help='json file that stores the environment variable that will be used to populate the planner')
 parser.add_argument("--myWidth", type=int, default=1000, help="The width of the simulator windows")
 parser.add_argument("--myHeight", type=int, default=500, help="The height of the simulator windows")
@@ -77,8 +76,7 @@ class Simulator(Widget):
             points += [float(traj[0]), float(traj[1])]
         return points
 
-    def begin(self, avPlanner):
-        obstacleTrajectories = avPlanner.getObstacleTrajectories()
+    def begin(self, obstacleTrajectories, vehicleTrajectory):
         obstacleTrajectories = []
         for avTrajectory in obstacleTrajectories:
             poseTable = avTrajectory.pose_table
@@ -92,8 +90,6 @@ class Simulator(Widget):
             obstacle.initialize(obstacleWaypoints, obstacleDt)
             self.obstacles.append(obstacle)
             
-
-        vehicleTrajectory = avPlanner.solveTrajectory()
         vehicleDt = vehicleTrajectory.dt
         vehicleWaypoints = np.asarray([[state.x, state.y, state.psi] for state in vehicleTrajectory.av_state_table])
         self.actorVehicle.initialize(vehicleWaypoints, vehicleDt)
@@ -131,14 +127,62 @@ class SimulatorApp(App):
             envFileStr = file.read()
         planner.loadFromJson(envFileStr)
 
+        # Plan the vehicle trajectory
+        vehicleTrajectory = planner.solveTrajectory()
+
+        # Get the obstacle trajectories
+        obstacleTrajectories = planner.getObstacleTrajectories()
+
+        # Get the max and min of the trajectories
+        max_x, min_x, max_y, min_y = get_env_max_min(obstacleTrajectories, vehicleTrajectory)
+
         # Initialize the simulator
         sim = Simulator()
-        sim.begin(planner)
+        sim.begin(obstacleTrajectories, vehicleTrajectory)
 
         # Update the simulator at the specified rate (simDt)
         Clock.schedule_interval(sim.update, simDt)
         return sim
 
+def get_max_min_from_waypoints(waypoints):
+    max_x = np.max(waypoints[:, 0])
+    max_y = np.max(waypoints[:, 1])
+    min_x = np.min(waypoints[:, 0])
+    min_y = np.min(waypoints[:, 1])
+    return max_x, min_x, max_y, min_y
+
+def get_max_min_from_pose_table(pose_table):
+    obstacleWaypoints = np.asarray([[pose.x, pose.y] for pose in pose_table])
+    return get_max_min_from_waypoints(obstacleWaypoints)
+
+def get_max_min_from_obstacle_trajectory(av_trajectory):
+    pose_table = av_trajectory.pose_table
+    return get_max_min_from_pose_table(pose_table)
+
+def get_max_min_from_obstacle_trajectories(obstacle_trajectories):
+    max_x = -float("inf")
+    max_y = -float("inf")
+    min_x = float("inf")
+    min_y = float("inf")
+    for av_trajectory in obstacle_trajectories:
+        curr_max_x, curr_min_x, curr_max_y, curr_min_y = get_max_min_from_obstacle_trajectory(av_trajectory)
+        
+        max_x = max(curr_max_x, max_x)
+        max_y = max(curr_max_y, max_y)
+        min_x = min(curr_min_x, min_x)
+        min_y = min(curr_min_y, min_y)
+        
+    return max_x, min_x, max_y, min_y
+
+def get_max_min_from_vehicle_trajectory(vehicle_trajectory):
+    vehicle_waypoints = np.asarray([[state.x, state.y, state.psi] for state in vehicle_trajectory.av_state_table])
+    return get_max_min_from_waypoints(vehicle_waypoints)
+
+def get_env_max_min(obstacle_trajectories, vehicle_trajectory):
+    obstacle_max_min = get_max_min_from_obstacle_trajectories(obstacle_trajectories)
+    vehicle_max_min = get_max_min_from_vehicle_trajectory(vehicle_trajectory)
+
+    return max(vehicle_max_min[0], obstacle_max_min[0]), min(vehicle_max_min[1], obstacle_max_min[1]), max(vehicle_max_min[2], obstacle_max_min[2]), min(vehicle_max_min[3], obstacle_max_min[3])
 
 if __name__ == '__main__':
     # Make sure that the simulator is not resizable
