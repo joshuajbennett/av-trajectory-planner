@@ -16,7 +16,7 @@
    "obstacles" : [
       {
          "dt" : 10,
-         "obs_outline" : {
+         "outline" : {
             "vertices" : [
                {
                   "x" : 0.5,
@@ -36,7 +36,7 @@
                }
             ]
          },
-         "pose_table" : [
+         "table" : [
             {
                "psi" : 0.80000000000000004,
                "x" : 3,
