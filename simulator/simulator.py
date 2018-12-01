@@ -15,11 +15,15 @@ sys.path.append('../build')
 import AvTrajectoryPlanner as av
 import argparse
 
-parser = argparse.ArgumentParser(description='Av Trajectory Planner Simulator')
-parser.add_argument("-f", "--envFile", type=str, default="sample_trajectory.txt", help='json file that stores the environment variable that will be used to populate the planner')
-args = parser.parse_args()
-
 simDt = 1.0/30.0
+
+parser = argparse.ArgumentParser(description='Av Trajectory Planner Simulator')
+
+parser.add_argument("-e", "--envFile", type=str, default="sample_trajectory.txt", help='json file that stores the environment variable that will be used to populate the planner')
+parser.add_argument("--myWidth", type=int, default=1000, help="The width of the simulator windows")
+parser.add_argument("--myHeight", type=int, default=500, help="The height of the simulator windows")
+
+args = parser.parse_args(sys.argv[2:])
 
 class Obstacle(Widget):
     obstacle = None
@@ -75,6 +79,7 @@ class Simulator(Widget):
 
     def begin(self, avPlanner):
         obstacleTrajectories = avPlanner.getObstacleTrajectories()
+        obstacleTrajectories = []
         for avTrajectory in obstacleTrajectories:
             poseTable = avTrajectory.pose_table
             obstacleWaypoints = np.asarray([[pose.x, pose.y] for pose in poseTable])
@@ -120,18 +125,30 @@ class Simulator(Widget):
 class SimulatorApp(App):
 
     def build(self):
+        # Initialize Planner and load the environment through the envFile
+        planner = av.Planner()
+        with open(args.envFile) as file:
+            envFileStr = file.read()
+        planner.loadFromJson(envFileStr)
+
+        # Initialize the simulator
         sim = Simulator()
         sim.begin(planner)
+
+        # Update the simulator at the specified rate (simDt)
         Clock.schedule_interval(sim.update, simDt)
         return sim
 
 
 if __name__ == '__main__':
-    planner = av.Planner()
-    with open(args.envFile) as file:
-        envFileStr = file.read()
-    planner.loadFromJson(envFileStr)
+    # Make sure that the simulator is not resizable
     Config.set('graphics', 'resizable', False)
-    Window.size = (500, 300)
+
+    # Use user specified width and height as window width and height
+    Window.size = (args.myWidth, args.myHeight)
+
+    # Set the background of the simulator to white
     Window.clearcolor = (1, 1, 1, 1)
+
+    # Begin the simulator app
     SimulatorApp().run()
