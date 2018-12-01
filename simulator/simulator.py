@@ -51,10 +51,8 @@ class Vehicle(Widget):
     radangle = NumericProperty(0)
     point = []
 
-    def initialize(self, trajecory, dt = 1):
-        waypoints = trajecory[:, 0:2]
-        headings = trajecory[:, 2]
-        self.vehicle = SimVehicle(waypoints, headings, dt=dt)
+    def initialize(self, trajectory):
+        self.vehicle = SimVehicle(trajectory)
         self.vehicle.create_trajectory(dt=simDt)
         self.trajGenerator = self.vehicle.trajectory_generator()
         start_pos = self.vehicle.get_start_point()
@@ -84,13 +82,12 @@ class Simulator(Widget):
             self.obstacles.append(obstacle)
 
         self.actorVehicle.initialize(vehicleTrajectory)
-        print(vehicleWaypoints)
         self.draw_trajectory()
 
     def draw_trajectory(self):
         for obstacle in self.obstacles:
-            trajecory = obstacle.obstacle.get_trajectory()
-            points = self.create_line_point(trajecory)
+            trajectory = obstacle.obstacle.get_trajectory()
+            points = self.create_line_point(trajectory)
             print(points)
             with self.canvas:
                 Color(1, 0, 1, 0.8)

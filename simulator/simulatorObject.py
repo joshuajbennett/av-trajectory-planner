@@ -17,10 +17,12 @@ class SimObject(ABC):
         pass
 
     def get_start_point(self):
-        return self.planner_trajectory.table[0]
+        start_point = self.planner_trajectory.table[0]
+        return np.asarray([start_point.x, start_point.y, start_point.psi])
 
     def get_goal_point(self):
-        return self.planner_trajectory.table[-1]
+        start_point = self.planner_trajectory.table[-1]
+        return np.asarray([start_point.x, start_point.y, start_point.psi])
 
     def get_trajectory(self):
         return self.trajectory
