@@ -147,7 +147,7 @@ def get_max_min_from_pose_table(pose_table):
     return get_max_min_from_waypoints(obstacleWaypoints)
 
 def get_max_min_from_obstacle_trajectory(av_trajectory):
-    pose_table = av_trajectory.pose_table
+    pose_table = av_trajectory.table
     return get_max_min_from_pose_table(pose_table)
 
 def get_max_min_from_obstacle_trajectories(obstacle_trajectories):
@@ -166,7 +166,7 @@ def get_max_min_from_obstacle_trajectories(obstacle_trajectories):
     return max_x, min_x, max_y, min_y
 
 def get_max_min_from_vehicle_trajectory(vehicle_trajectory):
-    vehicle_waypoints = np.asarray([[state.x, state.y, state.psi] for state in vehicle_trajectory.av_state_table])
+    vehicle_waypoints = np.asarray([[state.x, state.y, state.psi] for state in vehicle_trajectory.table])
     return get_max_min_from_waypoints(vehicle_waypoints)
 
 def get_env_max_min(obstacle_trajectories, vehicle_trajectory):
