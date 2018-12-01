@@ -89,7 +89,6 @@ class Simulator(Widget):
         for obstacle in self.obstacles:
             trajectory = obstacle.obstacle.get_trajectory()
             points = self.create_line_point(trajectory)
-            print(points)
             with self.canvas:
                 Color(1, 0, 1, 0.8)
                 Line(points=points, width=1, dash_length=10, dash_offset=10)
@@ -102,7 +101,6 @@ class Simulator(Widget):
 
     def update(self, dt):
         self.actorVehicle.move()
-
         for obstacle in self.obstacles:
             obstacle.move()
 
