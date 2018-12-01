@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from scipy.interpolate import splprep, splev, interp1d
+import math
 import numpy as np
+import pdb
 
 class SimObject(ABC):
     """
@@ -42,14 +44,14 @@ class SimObstacle(SimObject):
     def create_trajectory(self, dt=None):
         if not dt:
             dt = self.planner_trajectory.dt
-        num = int(dt/self.planner_trajectory.dt * len(self.planner_trajectory.table))
+        num = math.ceil(dt/self.planner_trajectory.dt * len(self.planner_trajectory.table)) + 1
 
-        self.trajectory = np.zeros([num, 3], np.float32)
+        self.trajectory = []
 
         time = 0
         for i in range(num):
             interp = self.planner_trajectory.interpolate(time)
-            self.trajectory[i,:] = np.asarray([interp.x, interp.y, interp.psi])
+            self.trajectory.append([interp.x, interp.y, interp.psi])
             time += dt
 
 
@@ -60,12 +62,12 @@ class SimVehicle(SimObject):
     def create_trajectory(self, dt=None):
         if not dt:
             dt = self.planner_trajectory.dt
-        num = int(dt/self.planner_trajectory.dt * len(self.planner_trajectory.table))
+        num = math.ceil(dt/self.planner_trajectory.dt * len(self.planner_trajectory.table)) + 1
 
-        self.trajectory = np.zeros([num, 3], np.float32)
+        self.trajectory = []
 
         time = 0
         for i in range(num):
             interp = self.planner_trajectory.interpolate(time)
-            self.trajectory[i,:] = np.asarray([interp.x, interp.y, interp.psi])
+            self.trajectory.append([interp.x, interp.y, interp.psi])
             time += dt
