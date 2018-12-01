@@ -144,23 +144,23 @@ struct Pose
 {
 	double x;
 	double y;
-	double theta;
+	double psi;
 
 	Pose operator*(double val)
 	{
-		return std::move(Pose {x * val, y * val, theta * val});
+		return std::move(Pose {x * val, y * val, psi * val});
 	}
 
 	Pose operator+(Pose pose)
 	{
-		return std::move(Pose {x + pose.x, y + pose.y, theta + pose.theta});
+		return std::move(Pose {x + pose.x, y + pose.y, psi + pose.psi});
 	}
 
 	void loadFromJson(Json::Value json)
 	{
 		x = json.get("x", 0.0).asDouble();
 		y = json.get("y", 0.0).asDouble();
-		theta = json.get("theta", 0.0).asDouble();
+		psi = json.get("psi", 0.0).asDouble();
 	}
 
 	Json::Value saveToJson()
@@ -168,7 +168,7 @@ struct Pose
 		Json::Value json;
 		json["x"] = x;
 		json["y"] = y;
-		json["theta"] = theta;
+		json["psi"] = psi;
 		return json;
 	}
 };

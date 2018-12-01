@@ -42,7 +42,7 @@ PYBIND11_MODULE(AvTrajectoryPlanner, m)
 		.def(py::init<double, double, double>())
 		.def_readwrite("x", &Pose::x)
 		.def_readwrite("y", &Pose::y)
-		.def_readwrite("theta", &Pose::theta);
+		.def_readwrite("pis", &Pose::psi);
 	py::class_<ObstacleTrajectory>(m, "ObstacleTrajectory")
 		.def(py::init<>())
 		.def(py::init<Boundary, std::vector<Pose>, double>())
