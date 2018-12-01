@@ -52,9 +52,9 @@ void Planner::appendObstacleTrajectory(ObstacleTrajectory obs_trajectory)
 void Planner::appendObstacleStatic(ObstacleStatic obs_static)
 {
 	ObstacleTrajectory static_traj;
-	static_traj.obs_outline = obs_static.obs_outline;
-	static_traj.pose_table.push_back(obs_static.obs_pose);
-	static_traj.pose_table.push_back(obs_static.obs_pose);
+	static_traj.outline = obs_static.outline;
+	static_traj.table.push_back(obs_static.obs_pose);
+	static_traj.table.push_back(obs_static.obs_pose);
 	static_traj.dt = solver_max_time;
 	obstacles.push_back(std::move(static_traj));
 }
@@ -124,14 +124,14 @@ AvTrajectory Planner::solveTrajectory()
 {
 	// Produce a dummy solution for now.
 	AvTrajectory traj;
-	traj.av_outline = vehicle_outline;
-	AvState av_state {0, 0, 0, 0, 0.1};
-	traj.av_state_table.push_back(av_state);
-	double dt = 0.1;
+	traj.outline = vehicle_outline;
+	AvState av_state {0, 0, 0.3, 0, 0.1};
+	traj.table.push_back(av_state);
+	double dt = 0.5;
 	for(int i = 0; i < 50; i++)
 	{
 		av_state = euler_step_unforced(av_state, dt);
-		traj.av_state_table.push_back(av_state);
+		traj.table.push_back(av_state);
 	}
 	traj.dt = dt;
 	traj.av_parameters = vehicle_config;

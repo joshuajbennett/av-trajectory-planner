@@ -144,23 +144,23 @@ struct Pose
 {
 	double x;
 	double y;
-	double theta;
+	double psi;
 
 	Pose operator*(double val)
 	{
-		return std::move(Pose {x * val, y * val, theta * val});
+		return std::move(Pose {x * val, y * val, psi * val});
 	}
 
 	Pose operator+(Pose pose)
 	{
-		return std::move(Pose {x + pose.x, y + pose.y, theta + pose.theta});
+		return std::move(Pose {x + pose.x, y + pose.y, psi + pose.psi});
 	}
 
 	void loadFromJson(Json::Value json)
 	{
 		x = json.get("x", 0.0).asDouble();
 		y = json.get("y", 0.0).asDouble();
-		theta = json.get("theta", 0.0).asDouble();
+		psi = json.get("psi", 0.0).asDouble();
 	}
 
 	Json::Value saveToJson()
@@ -168,7 +168,7 @@ struct Pose
 		Json::Value json;
 		json["x"] = x;
 		json["y"] = y;
-		json["theta"] = theta;
+		json["psi"] = psi;
 		return json;
 	}
 };
@@ -178,25 +178,25 @@ struct Pose
 ///
 struct ObstacleTrajectory
 {
-	Boundary obs_outline;
-	std::vector<Pose> pose_table;
+	Boundary outline;
+	std::vector<Pose> table;
 	double dt;
 
 	Pose interpolate(double time)
 	{
 		if(time < 0)
 		{
-			return std::move(pose_table[0]);
+			return std::move(table[0]);
 		}
-		else if(time >= (pose_table.size() - 1) * dt)
+		else if(time >= (table.size() - 1) * dt)
 		{
-			return std::move(pose_table[pose_table.size() - 1]);
+			return std::move(table[table.size() - 1]);
 		}
 		else
 		{
 			int first_pos = floor(time / dt);
-			Pose first = pose_table[first_pos];
-			Pose second = pose_table[first_pos + 1];
+			Pose first = table[first_pos];
+			Pose second = table[first_pos + 1];
 			double dist = time / dt - first_pos;
 			double inv_dist = 1.0 - dist;
 			return std::move(first * inv_dist + second * dist);
@@ -205,13 +205,13 @@ struct ObstacleTrajectory
 
 	void loadFromJson(Json::Value json)
 	{
-		obs_outline.loadFromJson(json["obs_outline"]);
-		pose_table.resize(0);
-		for(auto pose : json["pose_table"])
+		outline.loadFromJson(json["outline"]);
+		table.resize(0);
+		for(auto pose : json["table"])
 		{
 			Pose temp_pose;
 			temp_pose.loadFromJson(pose);
-			pose_table.push_back(temp_pose);
+			table.push_back(temp_pose);
 		}
 		dt = json.get("dt", 0.01).asDouble();
 	}
@@ -219,13 +219,13 @@ struct ObstacleTrajectory
 	Json::Value saveToJson()
 	{
 		Json::Value json;
-		json["obs_outline"] = obs_outline.saveToJson();
+		json["outline"] = outline.saveToJson();
 		Json::Value pose_list;
-		for(auto pose : pose_table)
+		for(auto pose : table)
 		{
 			pose_list.append(pose.saveToJson());
 		}
-		json["pose_table"] = pose_list;
+		json["table"] = pose_list;
 		json["dt"] = dt;
 		return json;
 	}
@@ -236,19 +236,19 @@ struct ObstacleTrajectory
 ///
 struct ObstacleStatic
 {
-	Boundary obs_outline;
+	Boundary outline;
 	Pose obs_pose;
 
 	void loadFromJson(Json::Value json)
 	{
-		obs_outline.loadFromJson(json["obs_outline"]);
+		outline.loadFromJson(json["outline"]);
 		obs_pose.loadFromJson(json["obs_pose"]);
 	}
 
 	Json::Value saveToJson()
 	{
 		Json::Value json;
-		json["obs_outline"] = obs_outline.saveToJson();
+		json["outline"] = outline.saveToJson();
 		json["obs_pose"] = obs_pose.saveToJson();
 		return json;
 	}
@@ -259,8 +259,8 @@ struct ObstacleStatic
 ///
 struct AvTrajectory
 {
-	Boundary av_outline;
-	std::vector<AvState> av_state_table;
+	Boundary outline;
+	std::vector<AvState> table;
 	double dt;
 	AvParams av_parameters;
 
@@ -268,17 +268,17 @@ struct AvTrajectory
 	{
 		if(time < 0)
 		{
-			return std::move(av_state_table[0]);
+			return std::move(table[0]);
 		}
-		else if(time >= (av_state_table.size() - 1) * dt)
+		else if(time >= (table.size() - 1) * dt)
 		{
-			return std::move(av_state_table[av_state_table.size() - 1]);
+			return std::move(table[table.size() - 1]);
 		}
 		else
 		{
 			int first_pos = floor(time / dt);
-			AvState first = av_state_table[first_pos];
-			AvState second = av_state_table[first_pos + 1];
+			AvState first = table[first_pos];
+			AvState second = table[first_pos + 1];
 			double dist = time / dt - first_pos;
 			double inv_dist = 1.0 - dist;
 			return std::move(first * inv_dist + second * dist);
@@ -287,13 +287,13 @@ struct AvTrajectory
 
 	void loadFromJson(Json::Value json)
 	{
-		av_outline.loadFromJson(json["av_outline"]);
-		av_state_table.resize(0);
-		for(auto av_state : json["av_state_table"])
+		outline.loadFromJson(json["outline"]);
+		table.resize(0);
+		for(auto av_state : json["table"])
 		{
 			AvState temp_state;
 			temp_state.loadFromJson(av_state);
-			av_state_table.push_back(temp_state);
+			table.push_back(temp_state);
 		}
 		dt = json.get("dt", 0.01).asDouble();
 		av_parameters.loadFromJson(json["av_parameters"]);
@@ -302,13 +302,13 @@ struct AvTrajectory
 	Json::Value saveToJson()
 	{
 		Json::Value json;
-		json["av_outline"] = av_outline.saveToJson();
+		json["outline"] = outline.saveToJson();
 		Json::Value state_list;
-		for(auto state : av_state_table)
+		for(auto state : table)
 		{
 			state_list.append(state.saveToJson());
 		}
-		json["av_state_table"] = state_list;
+		json["table"] = state_list;
 		json["dt"] = dt;
 		json["av_parameters"] = av_parameters.saveToJson();
 		return json;
