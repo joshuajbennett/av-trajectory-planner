@@ -39,9 +39,12 @@ class Obstacle(Widget):
         start_pos = self.obstacle.get_start_point()
         self.pos = [float(start_pos[0]), float(start_pos[1])]
 
-    def move(self):
+    def move(self, transformer):
         self.point = next(self.trajGenerator, self.point)
-        self.pos = [float(self.point[0]) - 25, float(self.point[1]) - 12.5]
+        x = float(self.point[0])
+        y = float(self.point[1])
+        coord_x, coord_y = transformer.get_coordinate(x, y)
+        self.pos = [float(coord_x) - 25, float(coord_y) - 12.5]
         self.radangle = float(self.point[2])
         self.angle = float(np.degrees(self.radangle))
 
@@ -59,9 +62,12 @@ class Vehicle(Widget):
         start_pos = self.vehicle.get_start_point()
         self.pos = [float(start_pos[0]), float(start_pos[1])]
 
-    def move(self):
+    def move(self, transformer):
         self.point = next(self.trajGenerator, self.point)
-        self.pos = [float(self.point[0])*100 - 25, float(self.point[1])*100 - 12.5]
+        x = float(self.point[0])
+        y = float(self.point[1])
+        coord_x, coord_y = transformer.get_coordinate(x, y)
+        self.pos = [float(coord_x) - 25, float(coord_y) - 12.5]
         self.radangle = float(self.point[2])
         self.angle = float(np.degrees(self.radangle))
 
@@ -72,18 +78,21 @@ class Simulator(Widget):
     def create_line_point(self, trajectory):
         points = []
         for traj in trajectory:
-            points += [float(traj[0]), float(traj[1])]
+            x = float(traj[0])
+            y = float(traj[1])
+            points += list(self.transformer.get_coordinate(x, y))
         return points
 
-    def begin(self, obstacleTrajectories, vehicleTrajectory):
+    def begin(self, obstacleTrajectories, vehicleTrajectory, transformer):
         for trajectory in obstacleTrajectories:
             obstacle = Obstacle()
             self.add_widget(obstacle)
             obstacle.initialize(trajectory)
             self.obstacles.append(obstacle)
-
+        self.transformer = transformer
         self.actorVehicle.initialize(vehicleTrajectory)
         self.draw_trajectory()
+        
 
     def draw_trajectory(self):
         for obstacle in self.obstacles:
@@ -100,9 +109,9 @@ class Simulator(Widget):
 
 
     def update(self, dt):
-        self.actorVehicle.move()
+        self.actorVehicle.move(self.transformer)
         for obstacle in self.obstacles:
-            obstacle.move()
+            obstacle.move(self.transformer)
 
 
 class SimulatorApp(App):
@@ -123,11 +132,12 @@ class SimulatorApp(App):
         # Get the max and min of the trajectories
         max_x, min_x, max_y, min_y = get_env_max_min(obstacleTrajectories, vehicleTrajectory)
 
-        print(max_x, min_x, max_y, min_y)
+        # Initialize coordinate transformer
+        transformer = CoordinateTransformer(max_x, min_x, max_y, min_y, args.padding, args.myWidth, args.myHeight)
 
         # Initialize the simulator
         sim = Simulator()
-        sim.begin(obstacleTrajectories, vehicleTrajectory)
+        sim.begin(obstacleTrajectories, vehicleTrajectory, transformer)
 
         # Update the simulator at the specified rate (simDt)
         Clock.schedule_interval(sim.update, simDt)
@@ -146,8 +156,8 @@ class CoordinateTransformer(object):
         scale_x = float(windowWith)/float(max_x - min_x + 2*minPadding)
         self.scale = min(scale_x, scale_y)
 
-        self.pad_y = float(windowHeight)/float(2*scale_y) - float(max_y - min_y)/float(2)
-        self.pad_x = float(windowWith)/float(2*scale_x) - float(max_x - min_x)/float(2)
+        self.pad_y = float(windowHeight)/float(2*self.scale) - float(max_y - min_y)/float(2)
+        self.pad_x = float(windowWith)/float(2*self.scale) - float(max_x - min_x)/float(2)
 
     def get_coordinate(self, x, y):
         coord_x = ((x - self.min_x) + self.pad_x) * self.scale
