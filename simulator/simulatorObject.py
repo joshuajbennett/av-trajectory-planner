@@ -40,14 +40,15 @@ class SimObstacle(SimObject):
     def create_trajectory(self, dt=None):
         if not dt:
             dt = self.planner_trajectory.dt
-        num = int(self.dt/self.planner_trajectory.dt * len(self.planner_trajectory.table))
+        num = int(dt/self.planner_trajectory.dt * len(self.planner_trajectory.table))
 
         self.trajectory = np.zeros([num, 3], np.float32)
 
         time = 0
         for i in range(num):
             interp = self.planner_trajectory.interpolate(time)
-            self.trajectory[time,:] = np.asarray([interp.x, interp.y, interp.psi])
+            self.trajectory[i,:] = np.asarray([interp.x, interp.y, interp.psi])
+            time += dt
 
 
 class SimVehicle(SimObject):
@@ -57,11 +58,12 @@ class SimVehicle(SimObject):
     def create_trajectory(self, dt=None):
         if not dt:
             dt = self.planner_trajectory.dt
-        num = int(self.dt/self.planner_trajectory.dt * len(self.planner_trajectory.table))
+        num = int(dt/self.planner_trajectory.dt * len(self.planner_trajectory.table))
 
         self.trajectory = np.zeros([num, 3], np.float32)
 
         time = 0
         for i in range(num):
             interp = self.planner_trajectory.interpolate(time)
-            self.trajectory[time,:] = np.asarray([interp.x, interp.y, interp.psi])
+            self.trajectory[i,:] = np.asarray([interp.x, interp.y, interp.psi])
+            time += dt
