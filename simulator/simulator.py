@@ -136,6 +136,8 @@ class SimulatorApp(App):
         # Get the max and min of the trajectories
         max_x, min_x, max_y, min_y = get_env_max_min(obstacleTrajectories, vehicleTrajectory)
 
+        print(max_x, min_x, max_y, min_y)
+
         # Initialize the simulator
         sim = Simulator()
         sim.begin(obstacleTrajectories, vehicleTrajectory)
@@ -175,7 +177,7 @@ def get_max_min_from_obstacle_trajectories(obstacle_trajectories):
     return max_x, min_x, max_y, min_y
 
 def get_max_min_from_vehicle_trajectory(vehicle_trajectory):
-    vehicle_waypoints = np.asarray([[state.x, state.y, state.psi] for state in vehicle_trajectory.av_state_table])
+    vehicle_waypoints = np.asarray([[state.x, state.y] for state in vehicle_trajectory.av_state_table])
     return get_max_min_from_waypoints(vehicle_waypoints)
 
 def get_env_max_min(obstacle_trajectories, vehicle_trajectory):
