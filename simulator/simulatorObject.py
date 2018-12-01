@@ -52,10 +52,17 @@ class SimObstacle(SimObject):
         if not dt:
             dt = self.dt
         num = int(self.dt/dt * len(self.waypoints))
-        # print(num)
         x = self.waypoints[:,0]
         y = self.waypoints[:,1]
-        tck, u = splprep([x, y], s=0)
+        if len(x) > 3:
+            k = 3
+        elif len(x) == 3:
+            k = 2
+        elif len(x) == 2:
+            k = 1
+        else:
+            raise("Must have path length >= 2")
+        tck, u = splprep([x, y], s=0, k=k)
         u = np.linspace(u.min(), u.max(), num)
         x, y = splev(u, tck)
         xp, yp = splev(u, tck, der=1)
@@ -76,6 +83,14 @@ class SimVehicle(SimObject):
         # print(num)
         x = self.waypoints[:,0]
         y = self.waypoints[:,1]
+        if len(x) > 3:
+            k = 3
+        elif len(x) == 3:
+            k = 2
+        elif len(x) == 2:
+            k = 1
+        else:
+            raise("Must have path length >= 2")
         tck, u = splprep([x, y], s=0)
         u_new = np.linspace(u.min(), u.max(), num)
         x, y = splev(u_new, tck)

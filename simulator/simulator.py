@@ -19,6 +19,8 @@ parser = argparse.ArgumentParser(description='Av Trajectory Planner Simulator')
 parser.add_argument("-f", "--envFile", type=str, default="sample_trajectory.txt", help='json file that stores the environment variable that will be used to populate the planner')
 args = parser.parse_args()
 
+simDt = 1.0/30.0
+
 class Obstacle(Widget):
     obstacle = None
     trajGenerator = None
@@ -27,8 +29,8 @@ class Obstacle(Widget):
     point = []
 
     def initialize(self, waypoints, dt = 1):
-        self.obstacle = SimObstacle(waypoints, dt=0.2)
-        self.obstacle.create_trajectory(dt=dt)
+        self.obstacle = SimObstacle(waypoints, dt=dt)
+        self.obstacle.create_trajectory(dt=simDt)
         self.trajGenerator = self.obstacle.trajectory_generator()
         start_pos = self.obstacle.get_start_point()
         self.pos = [float(start_pos[0]), float(start_pos[1])]
@@ -49,8 +51,8 @@ class Vehicle(Widget):
     def initialize(self, trajecory, dt = 1):
         waypoints = trajecory[:, 0:2]
         headings = trajecory[:, 2]
-        self.vehicle = SimVehicle(waypoints, headings, dt=0.05)
-        self.vehicle.create_trajectory(dt=dt)
+        self.vehicle = SimVehicle(waypoints, headings, dt=dt)
+        self.vehicle.create_trajectory(dt=simDt)
         self.trajGenerator = self.vehicle.trajectory_generator()
         start_pos = self.vehicle.get_start_point()
         self.pos = [float(start_pos[0]), float(start_pos[1])]
@@ -63,7 +65,6 @@ class Vehicle(Widget):
 
 class Simulator(Widget):
     actorVehicle = ObjectProperty(None)
-    # obstacle0 = ObjectProperty(None)
     obstacles = ListProperty(None)
 
     def create_line_point(self, trajectory):
@@ -75,14 +76,17 @@ class Simulator(Widget):
     def begin(self, avPlanner):
         obstacleTrajectories = avPlanner.getObstacleTrajectories()
         for avTrajectory in obstacleTrajectories:
-            poseTable = avTrajectory.poseTable
+            poseTable = avTrajectory.pose_table
             obstacleWaypoints = np.asarray([[pose.x, pose.y] for pose in poseTable])
-            obstacleDt = avTrajectory.dt;
+            obstacleDt = avTrajectory.dt
+            print(obstacleWaypoints)
+            print(obstacleDt)
+            print(simDt)
             obstacle = Obstacle()
             self.add_widget(obstacle)
             obstacle.initialize(obstacleWaypoints, obstacleDt)
             self.obstacles.append(obstacle)
-            print(obstacleWaypoints)
+            
 
         vehicleTrajectory = avPlanner.solveTrajectory()
         vehicleDt = vehicleTrajectory.dt
@@ -118,13 +122,15 @@ class SimulatorApp(App):
     def build(self):
         sim = Simulator()
         sim.begin(planner)
-        Clock.schedule_interval(sim.update, 1.0/60.0)
+        Clock.schedule_interval(sim.update, simDt)
         return sim
 
 
 if __name__ == '__main__':
     planner = av.Planner()
-    planner.loadFromJson(args.envFile)
+    with open(args.envFile) as file:
+        envFileStr = file.read()
+    planner.loadFromJson(envFileStr)
     Config.set('graphics', 'resizable', False)
     Window.size = (500, 300)
     Window.clearcolor = (1, 1, 1, 1)
