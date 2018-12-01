@@ -11,6 +11,18 @@ obstacle.obs_pose = av.Pose(3,0.5, 0.8)
 
 planner.appendObstacleStatic(obstacle)
 
+dynamic_traj = av.ObstacleTrajectory()
+dynamic_traj.dt = 2
+dynamic_traj.outline = av.Boundary([av.Point(0.5,0.5), av.Point(-0.5, 0.5), av.Point(-0.5, -0.5), av.Point(-0.5, 0.5)])
+new_table = []
+new_table.append(av.Pose(0,3,0))
+new_table.append(av.Pose(0,3,3))
+new_table.append(av.Pose(0,0,3))
+new_table.append(av.Pose(0,0,0))
+dynamic_traj.table = new_table
+
+planner.appendObstacleTrajectory(dynamic_traj)
+
 json = planner.saveToJson()
 
 output = open("scenarios/simple_trajectory_1.txt","w")

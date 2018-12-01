@@ -127,8 +127,8 @@ AvTrajectory Planner::solveTrajectory()
 	traj.outline = vehicle_outline;
 	AvState av_state {0, 0, 0.3, 0, 0.1};
 	traj.table.push_back(av_state);
-	double dt = 0.5;
-	for(int i = 0; i < 50; i++)
+	double dt = 0.1;
+	for(int i = 0; i < 500; i++)
 	{
 		av_state = euler_step_unforced(av_state, dt);
 		traj.table.push_back(av_state);
