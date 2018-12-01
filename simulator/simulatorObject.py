@@ -44,7 +44,7 @@ class SimObstacle(SimObject):
     def create_trajectory(self, dt=None):
         if not dt:
             dt = self.planner_trajectory.dt
-        num = math.ceil(dt/self.planner_trajectory.dt * len(self.planner_trajectory.table)) + 1
+        num = math.ceil(self.planner_trajectory.dt/dt * len(self.planner_trajectory.table)) + 1
 
         self.trajectory = []
 
@@ -62,7 +62,7 @@ class SimVehicle(SimObject):
     def create_trajectory(self, dt=None):
         if not dt:
             dt = self.planner_trajectory.dt
-        num = math.ceil(dt/self.planner_trajectory.dt * len(self.planner_trajectory.table)) + 1
+        num = math.ceil(self.planner_trajectory.dt/dt * len(self.planner_trajectory.table)) + 1
 
         self.trajectory = []
 

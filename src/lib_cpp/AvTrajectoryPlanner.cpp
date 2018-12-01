@@ -125,7 +125,7 @@ AvTrajectory Planner::solveTrajectory()
 	// Produce a dummy solution for now.
 	AvTrajectory traj;
 	traj.outline = vehicle_outline;
-	AvState av_state {0, 0, 0.3, 0, 0.1};
+	AvState av_state {0, 0, 0.3, 0, 1.0};
 	traj.table.push_back(av_state);
 	double dt = 0.1;
 	for(int i = 0; i < 500; i++)
