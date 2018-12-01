@@ -7,10 +7,9 @@ class SimObject(ABC):
     waypoints are nx2 array that contains the points where the
     object must pass through
     """
-    def __init__(self, waypoints=None, dt=1):
+    def __init__(self, planner_trajectory):
         super().__init__()
-        self.waypoints = waypoints
-        self.dt = dt
+        self.planner_trajectory = planner_trajectory
         self.trajectory = None
 
     @abstractmethod
@@ -18,20 +17,10 @@ class SimObject(ABC):
         pass
 
     def get_start_point(self):
-        if np.any(self.waypoints):
-            return self.waypoints[0]
-        return None
-    
-    def get_goal_point(self):
-        if np.any(self.waypoints):
-            return self.waypoints[-1]
-        return None
+        return self.planner_trajectory.table[0]
 
-    def get_waypoints(self):
-        return self.waypoints
-    
-    def set_waypoints(self, waypoints):
-        self.waypoints = waypoints
+    def get_goal_point(self):
+        return self.planner_trajectory.table[-1]
 
     def get_trajectory(self):
         return self.trajectory
@@ -42,59 +31,37 @@ class SimObject(ABC):
     def trajectory_generator(self, dt=None):
         for point in self.trajectory:
             yield point
-    
+
 
 class SimObstacle(SimObject):
-    def __init__(self, waypoints, dt=1):
-        super(SimObstacle, self).__init__(waypoints, dt)
+    def __init__(self, planner_trajectory):
+        super(SimObstacle, self).__init__(planner_trajectory)
 
     def create_trajectory(self, dt=None):
         if not dt:
-            dt = self.dt
-        num = int(self.dt/dt * len(self.waypoints))
-        x = self.waypoints[:,0]
-        y = self.waypoints[:,1]
-        if len(x) > 3:
-            k = 3
-        elif len(x) == 3:
-            k = 2
-        elif len(x) == 2:
-            k = 1
-        else:
-            raise("Must have path length >= 2")
-        tck, u = splprep([x, y], s=0, k=k)
-        u = np.linspace(u.min(), u.max(), num)
-        x, y = splev(u, tck)
-        xp, yp = splev(u, tck, der=1)
-        heading = np.arctan2(yp, xp)
-        self.trajectory = np.stack([x, y, heading], -1)
+            dt = self.planner_trajectory.dt
+        num = int(self.dt/self.planner_trajectory.dt * len(self.planner_trajectory.table))
 
-        
+        self.trajectory = np.zeros([num, 3], np.float32)
+
+        time = 0
+        for i in range(num):
+            interp = self.planner_trajectory.interpolate(time)
+            self.trajectory[time,:] = np.asarray([interp.x, interp.y, interp.psi])
+
 
 class SimVehicle(SimObject):
-    def __init__(self, waypoints, headings, dt=1):
-        super(SimVehicle, self).__init__(waypoints, dt)
-        self.headings = headings
+    def __init__(self, planner_trajectory):
+        super(SimVehicle, self).__init__(planner_trajectory)
 
     def create_trajectory(self, dt=None):
         if not dt:
-            dt = self.dt
-        num = int(self.dt/dt * len(self.waypoints))
-        # print(num)
-        x = self.waypoints[:,0]
-        y = self.waypoints[:,1]
-        if len(x) > 3:
-            k = 3
-        elif len(x) == 3:
-            k = 2
-        elif len(x) == 2:
-            k = 1
-        else:
-            raise("Must have path length >= 2")
-        tck, u = splprep([x, y], s=0)
-        u_new = np.linspace(u.min(), u.max(), num)
-        x, y = splev(u_new, tck)
-        unwrapHeading = np.unwrap(self.headings)
-        interpedHeading = np.interp(u_new, u, unwrapHeading)
-        interpedHeading = ((interpedHeading + np.pi)%(2*np.pi))-np.pi
-        self.trajectory = np.stack([x, y, interpedHeading], -1)
+            dt = self.planner_trajectory.dt
+        num = int(self.dt/self.planner_trajectory.dt * len(self.planner_trajectory.table))
+
+        self.trajectory = np.zeros([num, 3], np.float32)
+
+        time = 0
+        for i in range(num):
+            interp = self.planner_trajectory.interpolate(time)
+            self.trajectory[time,:] = np.asarray([interp.x, interp.y, interp.psi])

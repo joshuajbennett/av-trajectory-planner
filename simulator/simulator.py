@@ -31,8 +31,8 @@ class Obstacle(Widget):
     radangle = NumericProperty(0)
     point = []
 
-    def initialize(self, waypoints, dt = 1):
-        self.obstacle = SimObstacle(waypoints, dt=dt)
+    def initialize(self, trajectory):
+        self.obstacle = SimObstacle(trajectory)
         self.obstacle.create_trajectory(dt=simDt)
         self.trajGenerator = self.obstacle.trajectory_generator()
         start_pos = self.obstacle.get_start_point()
@@ -77,22 +77,13 @@ class Simulator(Widget):
         return points
 
     def begin(self, obstacleTrajectories, vehicleTrajectory):
-        obstacleTrajectories = []
         for avTrajectory in obstacleTrajectories:
-            poseTable = avTrajectory.pose_table
-            obstacleWaypoints = np.asarray([[pose.x, pose.y] for pose in poseTable])
-            obstacleDt = avTrajectory.dt
-            print(obstacleWaypoints)
-            print(obstacleDt)
-            print(simDt)
             obstacle = Obstacle()
             self.add_widget(obstacle)
-            obstacle.initialize(obstacleWaypoints, obstacleDt)
+            obstacle.initialize(trajectory)
             self.obstacles.append(obstacle)
-            
-        vehicleDt = vehicleTrajectory.dt
-        vehicleWaypoints = np.asarray([[state.x, state.y, state.psi] for state in vehicleTrajectory.av_state_table])
-        self.actorVehicle.initialize(vehicleWaypoints, vehicleDt)
+
+        self.actorVehicle.initialize(vehicleTrajectory)
         print(vehicleWaypoints)
         self.draw_trajectory()
 
@@ -158,7 +149,7 @@ def get_max_min_from_pose_table(pose_table):
     return get_max_min_from_waypoints(obstacleWaypoints)
 
 def get_max_min_from_obstacle_trajectory(av_trajectory):
-    pose_table = av_trajectory.pose_table
+    pose_table = av_trajectory.table
     return get_max_min_from_pose_table(pose_table)
 
 def get_max_min_from_obstacle_trajectories(obstacle_trajectories):
@@ -168,12 +159,12 @@ def get_max_min_from_obstacle_trajectories(obstacle_trajectories):
     min_y = float("inf")
     for av_trajectory in obstacle_trajectories:
         curr_max_x, curr_min_x, curr_max_y, curr_min_y = get_max_min_from_obstacle_trajectory(av_trajectory)
-        
+
         max_x = max(curr_max_x, max_x)
         max_y = max(curr_max_y, max_y)
         min_x = min(curr_min_x, min_x)
         min_y = min(curr_min_y, min_y)
-        
+
     return max_x, min_x, max_y, min_y
 
 def get_max_min_from_vehicle_trajectory(vehicle_trajectory):
@@ -198,3 +189,4 @@ if __name__ == '__main__':
 
     # Begin the simulator app
     SimulatorApp().run()
+
