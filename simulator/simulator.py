@@ -159,12 +159,13 @@ def get_max_min_from_obstacle_trajectories(obstacle_trajectories):
     min_y = float("inf")
     for av_trajectory in obstacle_trajectories:
         if len(av_trajectory.table) > 0:
-            curr_max_x, curr_min_x, curr_max_y, curr_min_y = get_max_min_from_obstacle_trajectory(av_trajectory)
+            raise("Empty obstacle trajectory")
+        curr_max_x, curr_min_x, curr_max_y, curr_min_y = get_max_min_from_obstacle_trajectory(av_trajectory)
 
-            max_x = max(curr_max_x, max_x)
-            max_y = max(curr_max_y, max_y)
-            min_x = min(curr_min_x, min_x)
-            min_y = min(curr_min_y, min_y)
+        max_x = max(curr_max_x, max_x)
+        max_y = max(curr_max_y, max_y)
+        min_x = min(curr_min_x, min_x)
+        min_y = min(curr_min_y, min_y)
 
     return max_x, min_x, max_y, min_y
 
