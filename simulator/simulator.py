@@ -155,7 +155,7 @@ def get_max_min_from_obstacle_trajectories(obstacle_trajectories):
     min_x = float("inf")
     min_y = float("inf")
     for av_trajectory in obstacle_trajectories:
-        if len(av_trajectory.table) > 0:
+        if len(av_trajectory.table) <= 0:
             raise Exception("Empty obstacle trajectory")
         curr_max_x, curr_min_x, curr_max_y, curr_min_y = get_max_min_from_obstacle_trajectory(av_trajectory)
 
@@ -167,7 +167,7 @@ def get_max_min_from_obstacle_trajectories(obstacle_trajectories):
     return max_x, min_x, max_y, min_y
 
 def get_max_min_from_vehicle_trajectory(vehicle_trajectory):
-    vehicle_waypoints = np.asarray([[state.x, state.y] for state in vehicle_trajectory.av_state_table])
+    vehicle_waypoints = np.asarray([[state.x, state.y] for state in vehicle_trajectory.table])
     return get_max_min_from_waypoints(vehicle_waypoints)
 
 def get_env_max_min(obstacle_trajectories, vehicle_trajectory):
