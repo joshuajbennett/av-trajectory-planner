@@ -21,6 +21,7 @@ parser = argparse.ArgumentParser(description='Av Trajectory Planner Simulator')
 parser.add_argument("-e", "--envFile", type=str, default="sample_trajectory.txt", help='json file that stores the environment variable that will be used to populate the planner')
 parser.add_argument("--myWidth", type=int, default=1000, help="The width of the simulator windows")
 parser.add_argument("--myHeight", type=int, default=500, help="The height of the simulator windows")
+parser.add_argument("--padding", type=int, default=3, help="The padding to the simulator in meters")
 
 args = parser.parse_args(sys.argv[2:])
 
@@ -60,7 +61,7 @@ class Vehicle(Widget):
 
     def move(self):
         self.point = next(self.trajGenerator, self.point)
-        self.pos = [float(self.point[0]) - 25, float(self.point[1]) - 12.5]
+        self.pos = [float(self.point[0])*100 - 25, float(self.point[1])*100 - 12.5]
         self.radangle = float(self.point[2])
         self.angle = float(np.degrees(self.radangle))
 
@@ -133,6 +134,27 @@ class SimulatorApp(App):
         # Update the simulator at the specified rate (simDt)
         Clock.schedule_interval(sim.update, simDt)
         return sim
+
+class CoordinateTransformer(object):
+    def __init__(self, max_x, min_x, max_y, min_y, minPadding, windowWith, windowHeight):
+        self.max_x = max_x
+        self.max_y = max_y
+        self.min_x = min_x
+        self.min_y = min_y
+        self.windowHeight = windowHeight
+        self.windowWidth = windowWith
+        
+        scale_y = float(windowHeight)/float(max_y - min_y + 2*minPadding)
+        scale_x = float(windowWith)/float(max_x - min_x + 2*minPadding)
+        self.scale = min(scale_x, scale_y)
+
+        self.pad_y = float(windowHeight)/float(2*scale_y) - float(max_y - min_y)/float(2)
+        self.pad_x = float(windowWith)/float(2*scale_x) - float(max_x - min_x)/float(2)
+
+    def get_coordinate(self, x, y):
+        coord_x = ((x - self.min_x) + self.pad_x) * self.scale
+        coord_y = ((y - self.min_y) + self.pad_y) * self.scale
+        return coord_x, coord_y
 
 def get_max_min_from_waypoints(waypoints):
     max_x = np.max(waypoints[:, 0])
