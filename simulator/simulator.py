@@ -156,7 +156,7 @@ def get_max_min_from_obstacle_trajectories(obstacle_trajectories):
     min_y = float("inf")
     for av_trajectory in obstacle_trajectories:
         if len(av_trajectory.table) > 0:
-            raise("Empty obstacle trajectory")
+            raise Exception("Empty obstacle trajectory")
         curr_max_x, curr_min_x, curr_max_y, curr_min_y = get_max_min_from_obstacle_trajectory(av_trajectory)
 
         max_x = max(curr_max_x, max_x)
