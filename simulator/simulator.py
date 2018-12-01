@@ -32,8 +32,8 @@ class Obstacle(Widget):
     radangle = NumericProperty(0)
     point = []
 
-    def initialize(self, waypoints, dt = 1):
-        self.obstacle = SimObstacle(waypoints, dt=dt)
+    def initialize(self, trajectory):
+        self.obstacle = SimObstacle(trajectory)
         self.obstacle.create_trajectory(dt=simDt)
         self.trajGenerator = self.obstacle.trajectory_generator()
         start_pos = self.obstacle.get_start_point()
@@ -79,24 +79,15 @@ class Simulator(Widget):
 
     def begin(self, avPlanner):
         obstacleTrajectories = avPlanner.getObstacleTrajectories()
-        obstacleTrajectories = []
-        for avTrajectory in obstacleTrajectories:
-            poseTable = avTrajectory.pose_table
-            obstacleWaypoints = np.asarray([[pose.x, pose.y] for pose in poseTable])
-            obstacleDt = avTrajectory.dt
-            print(obstacleWaypoints)
-            print(obstacleDt)
-            print(simDt)
+
+        for trajectory in obstacleTrajectories:
             obstacle = Obstacle()
             self.add_widget(obstacle)
-            obstacle.initialize(obstacleWaypoints, obstacleDt)
+            obstacle.initialize(trajectory)
             self.obstacles.append(obstacle)
-            
 
         vehicleTrajectory = avPlanner.solveTrajectory()
-        vehicleDt = vehicleTrajectory.dt
-        vehicleWaypoints = np.asarray([[state.x, state.y, state.psi] for state in vehicleTrajectory.av_state_table])
-        self.actorVehicle.initialize(vehicleWaypoints, vehicleDt)
+        self.actorVehicle.initialize(vehicleTrajectory)
         print(vehicleWaypoints)
         self.draw_trajectory()
 
@@ -152,3 +143,4 @@ if __name__ == '__main__':
 
     # Begin the simulator app
     SimulatorApp().run()
+
