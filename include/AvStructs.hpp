@@ -65,6 +65,22 @@ struct AvState
 };
 
 ///
+/// Contains all actions variables needed to define the action applied to an AV.
+///
+struct AvAction
+{
+	double turn_rate;
+	double accel_f;
+
+	enum Indices
+	{
+		TURN_RATE,
+		ACCEL_F,
+		SIZE
+	};
+};
+
+///
 /// Contains all parameters needed to define an AV state space model.
 ///
 struct AvParams

@@ -1,9 +1,9 @@
-#include <fstream>
-#include <iostream>
-
+#include "IterativeLQR.hpp"
 #include "AvConversions.hpp"
 #include "AvStructs.hpp"
-#include "IterativeLQR.hpp"
+#include "xtensor/xbuilder.hpp"
+#include <fstream>
+#include <iostream>
 
 using namespace av_structs;
 using namespace av_conversions;
@@ -56,7 +56,28 @@ void IterativeLQR::setSolverTimeStep(double dt)
 
 AvTrajectory IterativeLQR::solveTrajectory()
 {
+	auto state = av_state_to_xtensor(initial_state);
+	auto goal = av_state_to_xtensor(goal_state);
 
+	state.reshape({1, 5});
+	goal.reshape({1, 5});
+
+	size_t num_steps = ceil(solver_max_time / solver_dt);
+	size_t state_size = AvState::SIZE;
+	size_t action_size = AvAction::SIZE;
+
+	auto steps = xt::ones<double>({num_steps, size_t(1)});
+
+	auto X_desired = num_steps * goal;
+	auto U_desired = xt::zeros<double>({num_steps, action_size});
+	auto X_nominal = num_steps * state;
+	auto U_nominal = xt::zeros<double>({num_steps, action_size});
+
+	double epsilon = 0.001;
+
+	auto Q = 100 * xt::eye<double>({state_size});
+	auto Q_f = 10 * xt::eye<double>({state_size});
+	auto R = 1 * xt::eye<double>({state_size});
 	// Initialize the desired trajectory (a trajectory of all goal states)
 	// Initialize nominal
 	//
