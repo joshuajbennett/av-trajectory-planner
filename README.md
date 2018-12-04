@@ -18,10 +18,26 @@ sudo apt install -y cmake \
     python3-dev \
     pkg-config \
     libjsoncpp-dev \
-    python3-pip 
-             
+    python3-pip
+
 pip3 install numpy==1.11.0
-                 
+
+git clone https://github.com/QuantStack/xtl.git
+cd xtl
+mkdir build
+cd build
+cmake ..
+sudo make install
+cd ../../
+
+git clone https://github.com/QuantStack/xtensor.git
+cd xtensor
+mkdir build
+cd build
+cmake ..
+sudo make install
+cd ../../
+
 ```
 
 ##### Clone Repo
@@ -58,13 +74,13 @@ sudo apt install -y ffmpeg \
     libavcodec-dev \
     zlib1g-dev \
     libmtdev-dev
-    
+
 sudo apt install -y \
     libgstreamer1.0 \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good
-    
-pip3 install -I Cython==0.28.2 
+
+pip3 install -I Cython==0.28.2
 pip3 install matplotlib==3.0.2
 pip3 install numpy==1.11.0
 pip3 install scipy
