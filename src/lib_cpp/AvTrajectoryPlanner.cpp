@@ -2,6 +2,10 @@
 #include <iostream>
 
 #include "AvTrajectoryPlanner.hpp"
+#include "IterativeLQR.hpp"
+
+using namespace av_structs;
+using namespace iterative_lqr;
 
 namespace av_trajectory_planner
 {
@@ -122,55 +126,10 @@ std::string Planner::saveToJson()
 
 AvTrajectory Planner::solveTrajectory()
 {
-	// Initialize the desired trajectory (a trajectory of all goal states)
-	// Initialize nominal
-	//
-	// Define optimality epsilon
-	//
-	// Initial Q and R
-	//
-	// iterations of iLQR
-	//
-	//     get x_bar and u_bar desired
-	//
-	//     Initialize Ricatti variables S2, S1, S0
-	//
-	//     Linearize dynamics
-	//
-	//     Solve Ricatti backwards in time
-	//          Get our current Ricattie Variables
-	//          Linearize our system dynamics
-	//          Step S2, S1, and S0
-	//          Save S2, S1, and S0
-	//
-	//     Run forward prediction using Ricatti Solution
-	//
-	//          Compute linearization fo B
-	//
-	//          Get the Ricatti variables at this time step
-	//
-	//          calculate u bar star
-	//
-	//          convert to  u actual
-	//
-	//          update x actual (Euler method)
-	//     Check for convergence based on epsilon
-	// Return a trajectory
+	IterativeLQR ilqr = IterativeLQR(
+		initial_state, goal_state, vehicle_config, vehicle_outline, solver_max_time, solver_dt);
 
-	// Produce a dummy solution for now.
-	AvTrajectory traj;
-	traj.outline = vehicle_outline;
-	AvState av_state {0, 0, 0.3, -0.3, 1.0};
-	traj.table.push_back(av_state);
-	double dt = 0.1;
-	for(int i = 0; i < 100; i++)
-	{
-		av_state = euler_step_unforced(av_state, dt);
-		traj.table.push_back(av_state);
-	}
-	traj.dt = dt;
-	traj.av_parameters = vehicle_config;
-	return traj;
+	return std::move(ilqr.solveTrajectory());
 }
 
 AvState Planner::dynamics(AvState input, double turn_rate, double accel_f)

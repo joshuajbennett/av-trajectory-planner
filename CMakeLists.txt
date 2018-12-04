@@ -10,13 +10,19 @@ endif()
 include_directories("${PROJECT_SOURCE_DIR}/include")
 
 find_package(PkgConfig REQUIRED)
-
 pkg_check_modules(JSONCPP REQUIRED jsoncpp)
+
+find_package(xtensor REQUIRED)
+
+add_library(IterativeLQR SHARED src/lib_cpp/IterativeLQR.cpp)
+
+target_include_directories(IterativeLQR PRIVATE ${xtensor_INCLUDE_DIRS})
+target_link_libraries(IterativeLQR xtensor)
 
 add_library(AvTrajectoryPlanner SHARED src/lib_cpp/AvTrajectoryPlanner.cpp)
 
 target_include_directories(AvTrajectoryPlanner PRIVATE ${JSONCPP_INCLUDE_DIRS})
-target_link_libraries(AvTrajectoryPlanner ${JSONCPP_LIBRARIES})
+target_link_libraries(AvTrajectoryPlanner ${JSONCPP_LIBRARIES} IterativeLQR)
 
 add_executable(tests src/test/main.cpp)
 

@@ -1,5 +1,6 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
+#include "AvStructs.hpp"
 #include "AvTrajectoryPlanner.hpp"
 #include <iostream>
 #include <numpy/ndarrayobject.h>
@@ -10,6 +11,7 @@
 namespace py = pybind11;
 
 using namespace av_trajectory_planner;
+using namespace av_structs;
 
 PYBIND11_MODULE(AvTrajectoryPlanner, m)
 {
