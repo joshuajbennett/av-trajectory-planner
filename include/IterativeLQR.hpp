@@ -43,6 +43,8 @@ public:
 private:
 	xt::xarray<double> dynamics(xt::xarray<double> input, double turn_rate, double accel_f);
 
+	xt::xarray<double> jacobian(xt::xarray<double> input);
+
 	av_structs::AvState initial_state;
 
 	av_structs::AvState goal_state;

@@ -56,6 +56,7 @@ void IterativeLQR::setSolverTimeStep(double dt)
 
 AvTrajectory IterativeLQR::solveTrajectory()
 {
+	// Initialize the desired trajectory (a trajectory of all goal states)
 	auto state = av_state_to_xtensor(initial_state);
 	auto goal = av_state_to_xtensor(goal_state);
 
@@ -70,26 +71,44 @@ AvTrajectory IterativeLQR::solveTrajectory()
 
 	auto X_desired = num_steps * goal;
 	auto U_desired = xt::zeros<double>({num_steps, action_size});
+
+	// Initialize nominal
 	auto X_nominal = num_steps * state;
 	auto U_nominal = xt::zeros<double>({num_steps, action_size});
 
+	// Define optimality epsilon
 	double epsilon = 0.001;
 
-	auto Q = 100 * xt::eye<double>({state_size});
-	auto Q_f = 10 * xt::eye<double>({state_size});
-	auto R = 1 * xt::eye<double>({state_size});
-	// Initialize the desired trajectory (a trajectory of all goal states)
-	// Initialize nominal
-	//
-	// Define optimality epsilon
-	//
 	// Initial Q and R
-	//
-	// iterations of iLQR
-	//
-	//     get x_bar and u_bar desired
-	//
-	//     Initialize Ricatti variables S2, S1, S0
+	auto Q = 100.0 * xt::eye<double>({state_size});
+	auto Q_f = 10.0 * xt::eye<double>({state_size});
+	auto R = 1.0 * xt::eye<double>({state_size});
+
+	// Iterations of iLQR
+	do
+	{
+		// Get x_bar and u_bar desired
+		auto X_bar_desired = X_desired - X_nominal;
+		auto U_bar_desired = U_desired - U_nominal;
+
+		// Initialize Ricatti variables S2, S1, S0
+		auto S_2 = xt::zeros<double>({num_steps, state_size, state_size});
+
+		auto S_1 = xt::zeros<double>({num_steps, state_size, size_t(1)});
+
+		auto S_0 = xt::zeros<double>({num_steps, size_t(1), size_t(1)});
+
+		for(size_t t = num_steps; t > 0; --t)
+		{
+			auto current_S_2 = xt::view(S_2, t, xt::all(), xt::all());
+			auto current_S_1 = xt::view(S_1, t, xt::all(), size_t(1));
+			auto current_S_0 = xt::view(S_0, t, size_t(1), size_t(1));
+
+			// TODO Continue at the Linearize Dynamics step.
+		}
+
+		break;
+	} while(true);
 	//
 	//     Linearize dynamics
 	//
@@ -123,6 +142,13 @@ AvTrajectory IterativeLQR::solveTrajectory()
 	traj.dt = solver_dt;
 	traj.av_parameters = vehicle_config;
 	return traj;
+}
+
+xt::xarray<double> IterativeLQR::jacobian(xt::xarray<double> input)
+{
+	// TODO: Need to implement the linearized dynamics of our system here.
+	xt::xarray<double> output {0, 0, 0, 0, 0};
+	return (std::move(output));
 }
 
 xt::xarray<double>
