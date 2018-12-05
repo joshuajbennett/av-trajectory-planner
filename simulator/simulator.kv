@@ -7,13 +7,13 @@
         Rotate:
             axis: 0,0,1
             angle: self.angle
-            origin: self.center
+            origin: self.pos
     canvas:
         Color:
             rgba: 1, 0, 1, 0.8
-        Ellipse:
-            pos: self.pos
-            size: self.size          
+        Line:
+            width: 2.
+            points: self.points          
     canvas.after:
         PopMatrix
 
@@ -24,13 +24,13 @@
         Rotate:
             axis: 0,0,1
             angle: self.angle
-            origin: self.center
+            origin: self.pos
     canvas:
         Color:
             rgba: 0, 1, 0, 0.8
-        Rectangle:
-            pos: self.pos 
-            size: self.size
+        Line:
+            width: 2.
+            points: self.points
     canvas.after:
         PopMatrix
 

@@ -30,21 +30,29 @@ class Obstacle(Widget):
     trajGenerator = None
     angle = NumericProperty(0)
     radangle = NumericProperty(0)
+    # height = NumericProperty(0)
+    # width = NumericProperty(0)
+    outline = ListProperty([])
+    points = ListProperty([])
     point = []
 
-    def initialize(self, trajectory):
+    def initialize(self, trajectory, transformer):
         self.obstacle = SimObstacle(trajectory)
         self.obstacle.create_trajectory(dt=simDt)
         self.trajGenerator = self.obstacle.trajectory_generator()
         start_pos = self.obstacle.get_start_point()
         self.pos = [float(start_pos[0]), float(start_pos[1])]
+        self.outline = getTransformedOutlinePoints(trajectory, transformer)
+        # self.height, self.width = getHeightWidthFromOutline(self.outline)
+        self.points = getCurrPoints(float(start_pos[0]), float(start_pos[1]), self.outline)
 
     def move(self, transformer):
         self.point = next(self.trajGenerator, self.point)
         x = float(self.point[0])
         y = float(self.point[1])
         coord_x, coord_y = transformer.get_coordinate(x, y)
-        self.pos = [float(coord_x) - 25, float(coord_y) - 12.5]
+        self.pos = [float(coord_x) , float(coord_y)]
+        self.points = getCurrPoints(coord_x, coord_y, self.outline)
         self.radangle = float(self.point[2])
         self.angle = float(np.degrees(self.radangle))
 
@@ -53,23 +61,65 @@ class Vehicle(Widget):
     trajGenerator = None
     angle = NumericProperty(0)
     radangle = NumericProperty(0)
+    # height = NumericProperty(0)
+    # width = NumericProperty(0)
+    outline = ListProperty([])
+    points = ListProperty([])
     point = []
 
-    def initialize(self, trajectory):
+
+    def initialize(self, trajectory, transformer):
         self.vehicle = SimVehicle(trajectory)
         self.vehicle.create_trajectory(dt=simDt)
         self.trajGenerator = self.vehicle.trajectory_generator()
         start_pos = self.vehicle.get_start_point()
-        self.pos = [float(start_pos[0]), float(start_pos[1])]
+        self.outline = getTransformedOutlinePoints(trajectory, transformer)
+        # self.height, self.width = getHeightWidthFromOutline(self.outline)
+        self.points = getCurrPoints(float(start_pos[0]), float(start_pos[1]), self.outline)
+        
+        # self.pos = [float(start_pos[0]), float(start_pos[1])]
 
     def move(self, transformer):
         self.point = next(self.trajGenerator, self.point)
         x = float(self.point[0])
         y = float(self.point[1])
         coord_x, coord_y = transformer.get_coordinate(x, y)
-        self.pos = [float(coord_x) - 25, float(coord_y) - 12.5]
+        self.pos = [float(coord_x), float(coord_y)]
+        self.points = getCurrPoints(coord_x, coord_y, self.outline)
         self.radangle = float(self.point[2])
         self.angle = float(np.degrees(self.radangle))
+
+def getCurrPoints(x, y, outline):
+    points = []
+    for idx, point in enumerate(outline):
+        if idx%2 == 0:
+            point += x
+        else:
+            point += y
+        points.append(point)
+    return points
+
+def getHeightWidthFromOutline(points):
+    x = [points[i] for i in range(0, len(points), 2)]
+    y = [points[i] for i in range(1, len(points), 2)]
+    max_y = max(y)
+    max_x = max(x)
+    min_y = min(y)
+    min_x = min(x)
+    return float(max_y - min_y), float(max_x - min_x)
+
+def getTransformedOutlinePoints(av_trajectory, transformer):
+    scale = transformer.scale
+    vertices = av_trajectory.outline.vertices
+    if len(vertices) == 0:
+        raise Exception("Empty Outline")
+    points = []
+    for v in vertices:
+        x, y = v.x * scale, v.y*scale
+        points += [x, y]
+    points += [points[0], points[1]]
+    print(points)
+    return points
 
 class Simulator(Widget):
     actorVehicle = ObjectProperty(None)
@@ -87,10 +137,10 @@ class Simulator(Widget):
         for trajectory in obstacleTrajectories:
             obstacle = Obstacle()
             self.add_widget(obstacle)
-            obstacle.initialize(trajectory)
+            obstacle.initialize(trajectory, transformer)
             self.obstacles.append(obstacle)
         self.transformer = transformer
-        self.actorVehicle.initialize(vehicleTrajectory)
+        self.actorVehicle.initialize(vehicleTrajectory, transformer)
         self.draw_trajectory()
         
 
