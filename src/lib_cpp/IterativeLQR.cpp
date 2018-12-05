@@ -101,7 +101,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		// Solve Ricatti backwards in time
 		for(size_t t = num_steps; t > 0; --t)
 		{
-			// Get our current Ricattie Variables
+			// Get our current Ricatti Variables
 			auto current_S_2 = xt::view(S_2, t, xt::all(), xt::all());
 			auto current_S_1 = xt::view(S_1, t, xt::all(), size_t(1));
 			auto current_S_0 = xt::view(S_0, t, size_t(1), size_t(1));
@@ -113,14 +113,9 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			B_t.reshape({5, 1});
 			// Step S2, S1, and S0
 			auto B_t_transpose = xt::transpose(B_t, {1, 0});
-			// auto test = xt::linalg::dot(B_t, B_t_transpose);
-			// auto next_S_2 = xt::linalg::dot(current_S_2, current_S_1);
-			//		current_S_2 +
 
 			auto inv_R = xt::linalg::inv(R);
-
-			// auto test = xt::linalg::dot(B_t_transpose, B_t);
-			// auto temp1 = xt::linalg::dot(current_S_2, B_t);
+			//auto temp1 = xt::linalg::dot(current_S_2, current_S_2);
 			// auto temp2 = xt::linalg::dot(inv_R, B_T_transpose);
 			// auto temp3 = xt::linalg::dot(temp1, temp2);
 			// auto temp4 = xt::linalg::dot(temp3, current_S_2);
