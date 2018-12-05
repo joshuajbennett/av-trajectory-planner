@@ -2,6 +2,10 @@
 #include <iostream>
 
 #include "AvTrajectoryPlanner.hpp"
+#include "IterativeLQR.hpp"
+
+using namespace av_structs;
+using namespace iterative_lqr;
 
 namespace av_trajectory_planner
 {
@@ -122,20 +126,10 @@ std::string Planner::saveToJson()
 
 AvTrajectory Planner::solveTrajectory()
 {
-	// Produce a dummy solution for now.
-	AvTrajectory traj;
-	traj.outline = vehicle_outline;
-	AvState av_state {0, 0, 0.3, 0, 1.0};
-	traj.table.push_back(av_state);
-	double dt = 0.1;
-	for(int i = 0; i < 100; i++)
-	{
-		av_state = euler_step_unforced(av_state, dt);
-		traj.table.push_back(av_state);
-	}
-	traj.dt = dt;
-	traj.av_parameters = vehicle_config;
-	return traj;
+	IterativeLQR ilqr = IterativeLQR(
+		initial_state, goal_state, vehicle_config, vehicle_outline, solver_max_time, solver_dt);
+
+	return std::move(ilqr.solveTrajectory());
 }
 
 AvState Planner::dynamics(AvState input, double turn_rate, double accel_f)
