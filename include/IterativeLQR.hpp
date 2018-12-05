@@ -3,7 +3,9 @@
 
 #include "AvStructs.hpp"
 #include "xtensor/xarray.hpp"
+#include "xtensor/xbuilder.hpp"
 #include "xtensor/xio.hpp"
+#include "xtensor/xreducer.hpp"
 #include "xtensor/xview.hpp"
 
 namespace iterative_lqr

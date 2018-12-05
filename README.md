@@ -38,6 +38,31 @@ cmake ..
 sudo make install
 cd ../../
 
+git clone https://github.com/QuantStack/xtensor-blas.git
+cd xtensor-blas
+mkdir build
+cd build
+cmake ..
+sudo make install
+cd ../../
+
+git clone https://github.com/QuantStack/xtensor-blas.git
+cd xtensor-blas
+mkdir build
+cd build
+cmake ..
+sudo make install
+cd ../../
+
+git clone https://github.com/xianyi/OpenBLAS.git
+cd OpenBLAS
+mkdir build
+cd build
+cmake ..
+sudo make install
+cd ../../
+
+
 ```
 
 ##### Clone Repo

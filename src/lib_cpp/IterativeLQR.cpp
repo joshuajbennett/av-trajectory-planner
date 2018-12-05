@@ -1,7 +1,8 @@
 #include "IterativeLQR.hpp"
 #include "AvConversions.hpp"
 #include "AvStructs.hpp"
-#include "xtensor/xbuilder.hpp"
+#include "xtensor-blas/xblas.hpp"
+#include "xtensor-blas/xlinalg.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -69,13 +70,12 @@ AvTrajectory IterativeLQR::solveTrajectory()
 
 	auto steps = xt::ones<double>({num_steps, size_t(1)});
 
-	auto X_desired = num_steps * goal;
+	auto X_desired = steps * goal;
 	auto U_desired = xt::zeros<double>({num_steps, action_size});
 
 	// Initialize nominal
-	auto X_nominal = num_steps * state;
+	auto X_nominal = steps * state;
 	auto U_nominal = xt::zeros<double>({num_steps, action_size});
-
 	// Define optimality epsilon
 	double epsilon = 0.001;
 
@@ -98,24 +98,34 @@ AvTrajectory IterativeLQR::solveTrajectory()
 
 		auto S_0 = xt::zeros<double>({num_steps, size_t(1), size_t(1)});
 
+		// Solve Ricatti backwards in time
 		for(size_t t = num_steps; t > 0; --t)
 		{
+			// Get our current Ricattie Variables
 			auto current_S_2 = xt::view(S_2, t, xt::all(), xt::all());
 			auto current_S_1 = xt::view(S_1, t, xt::all(), size_t(1));
 			auto current_S_0 = xt::view(S_0, t, size_t(1), size_t(1));
+			auto current_X_nominal = xt::view(X_nominal, t, xt::all());
 
-			// TODO Continue at the Linearize Dynamics step.
+			// Linearize our system dynamics
+			auto A_t = jacobian(current_X_nominal);
+			xt::xarray<double> B_t {0, 0, 0, 1, 1};
+			B_t.reshape({5, 1});
+			// Step S2, S1, and S0
+			auto B_t_transpose = xt::transpose(B_t, {1, 0});
+
+			// auto next_S_2 = xt::linalg::dot(current_S_2, current_S_1);
+			//		current_S_2 +
+			//	auto next_S_2 =
+			//		current_S_2 +
+			//		solver_dt *
+			//			(Q - xt::linalg::dot(xt::linalg::dot(xt::linalg::dot(current_S_2, B_t),
+			//												 xt::linalg::dot(R * B_T_transpose)),
+			//								 current_S_2));
 		}
 
 		break;
 	} while(true);
-	//
-	//     Linearize dynamics
-	//
-	//     Solve Ricatti backwards in time
-	//          Get our current Ricattie Variables
-	//          Linearize our system dynamics
-	//          Step S2, S1, and S0
 	//          Save S2, S1, and S0
 	//
 	//     Run forward prediction using Ricatti Solution
@@ -146,8 +156,24 @@ AvTrajectory IterativeLQR::solveTrajectory()
 
 xt::xarray<double> IterativeLQR::jacobian(xt::xarray<double> input)
 {
-	// TODO: Need to implement the linearized dynamics of our system here.
-	xt::xarray<double> output {0, 0, 0, 0, 0};
+	xt::xarray<double> output {
+		{0,
+		 0,
+		 input(AvState::VEL_F) * cos(input(AvState::DELTA_F)) * sin(input(AvState::PSI)),
+		 input(AvState::VEL_F) * sin(input(AvState::DELTA_F)) * cos(input(AvState::PSI)),
+		 cos(input(AvState::DELTA_F)) * cos(input(AvState::PSI))},
+		{0,
+		 0,
+		 -input(AvState::VEL_F) * cos(input(AvState::DELTA_F)) * cos(input(AvState::PSI)),
+		 input(AvState::VEL_F) * sin(input(AvState::DELTA_F)) * sin(input(AvState::PSI)),
+		 input(AvState::VEL_F) * cos(input(AvState::DELTA_F)) * sin(input(AvState::PSI))},
+		{0,
+		 0,
+		 0,
+		 -input(AvState::VEL_F) * cos(input(AvState::DELTA_F)),
+		 sin(input(AvState::DELTA_F))},
+		{0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0}};
 	return (std::move(output));
 }
 
@@ -156,7 +182,7 @@ IterativeLQR::dynamics(xt::xarray<double> input, double turn_rate, double accel_
 {
 	xt::xarray<double> output {
 		input(AvState::VEL_F) * cos(input(AvState::DELTA_F)) * cos(input(AvState::PSI)),
-		input(AvState::VEL_F) * cos(input(AvState::DELTA_F)) * cos(input(AvState::PSI)),
+		input(AvState::VEL_F) * cos(input(AvState::DELTA_F)) * sin(input(AvState::PSI)),
 		input(AvState::VEL_F) * sin(input(AvState::DELTA_F)),
 		turn_rate,
 		accel_f};
