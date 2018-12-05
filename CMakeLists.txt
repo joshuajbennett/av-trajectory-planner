@@ -12,27 +12,30 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
-find_package(xtl REQUIRED)
-find_package(xtensor REQUIRED)
-find_package(xtensor-blas REQUIRED)
-
 add_definitions(-DHAVE_CBLAS=1)
+
+set(LAPACK_DIR /home/joshjb17/lapack-3.8.0/lib)
 
 if (WIN32)
     find_package(OpenBLAS REQUIRED)
     set(BLAS_LIBRARIES ${CMAKE_INSTALL_PREFIX}${OpenBLAS_LIBRARIES})
 else()
     find_package(BLAS REQUIRED)
-    find_package(lapack REQUIRED)
+    find_package(Lapack REQUIRED)
 endif()
 
+message(STATUS "BLAS VENDOR:    " ${BLA_VENDOR})
 message(STATUS "BLAS LIBRARIES: " ${BLAS_LIBRARIES})
 message(STATUS "LAPACK LIBRARIES: " ${LAPACK_LIBRARIES})
+
+find_package(xtl REQUIRED)
+find_package(xtensor REQUIRED)
+find_package(xtensor-blas REQUIRED)
 
 add_library(IterativeLQR SHARED src/lib_cpp/IterativeLQR.cpp)
 
 target_include_directories(IterativeLQR PRIVATE ${xtl_INCLUDE_DIRS} ${xtensor_INCLUDE_DIRS} ${xtensor_blas_INCLUDE_DIRS})
-target_link_libraries(IterativeLQR xtensor ${xtensor_blas_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(IterativeLQR xtensor  ${BLAS_LIBRARIES} ${Lapack_LIBRARIES})
 
 add_library(AvTrajectoryPlanner SHARED src/lib_cpp/AvTrajectoryPlanner.cpp)
 

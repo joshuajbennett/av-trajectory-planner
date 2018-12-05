@@ -113,15 +113,18 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			B_t.reshape({5, 1});
 			// Step S2, S1, and S0
 			auto B_t_transpose = xt::transpose(B_t, {1, 0});
-
+			// auto test = xt::linalg::dot(B_t, B_t_transpose);
 			// auto next_S_2 = xt::linalg::dot(current_S_2, current_S_1);
 			//		current_S_2 +
-			//	auto next_S_2 =
-			//		current_S_2 +
-			//		solver_dt *
-			//			(Q - xt::linalg::dot(xt::linalg::dot(xt::linalg::dot(current_S_2, B_t),
-			//												 xt::linalg::dot(R * B_T_transpose)),
-			//								 current_S_2));
+
+			auto inv_R = xt::linalg::inv(R);
+
+			// auto test = xt::linalg::dot(B_t_transpose, B_t);
+			// auto temp1 = xt::linalg::dot(current_S_2, B_t);
+			// auto temp2 = xt::linalg::dot(inv_R, B_T_transpose);
+			// auto temp3 = xt::linalg::dot(temp1, temp2);
+			// auto temp4 = xt::linalg::dot(temp3, current_S_2);
+			// auto next_S_2 = current_S_2 + solver_dt * (Q - temp4);
 		}
 
 		break;

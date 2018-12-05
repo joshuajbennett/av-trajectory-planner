@@ -18,7 +18,10 @@ sudo apt install -y cmake \
     python3-dev \
     pkg-config \
     libjsoncpp-dev \
-    python3-pip
+    python3-pip \
+    libblas-dev \
+    liblapack-dev \
+    libatlas-base-dev
 
 pip3 install numpy==1.11.0
 
@@ -45,23 +48,6 @@ cd build
 cmake ..
 sudo make install
 cd ../../
-
-git clone https://github.com/QuantStack/xtensor-blas.git
-cd xtensor-blas
-mkdir build
-cd build
-cmake ..
-sudo make install
-cd ../../
-
-git clone https://github.com/xianyi/OpenBLAS.git
-cd OpenBLAS
-mkdir build
-cd build
-cmake ..
-sudo make install
-cd ../../
-
 
 ```
 
