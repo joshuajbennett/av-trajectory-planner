@@ -93,19 +93,34 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		auto U_bar_desired = U_desired - U_nominal;
 
 		// Initialize Ricatti variables S2, S1, S0
-		auto S_2 = xt::zeros<double>({num_steps, state_size, state_size});
+		auto S_2_zeros = xt::zeros<double>({size_t(num_steps - 1), state_size * state_size});
+		xt::xarray<double> Q_f_resized = Q_f;
+		Q_f_resized.reshape({state_size * state_size});
+		auto S_2 = xt::stack(xtuple(S_2_zeros, Q_f_resized), 1);
 
-		auto S_1 = xt::zeros<double>({num_steps, state_size, size_t(1)});
+		auto S_1_zeros = xt::zeros<double>({size_t(num_steps - 1), state_size});
+		xt::xarray<double> X_bar_d = xt::view(X_bar_desired, num_steps, xt::all());
+		auto X_bar_d_transp = xt::transpose(X_bar_d, {1, 0});
+		auto S_1_T = -2.0 * xt::linalg::dot(Q_f, X_bar_d_transp);
+		auto S_1 = xt::stack(xtuple(S_1_zeros, S_1_T), 1);
 
-		auto S_0 = xt::zeros<double>({num_steps, size_t(1), size_t(1)});
+		auto S_0_zeros = xt::zeros<double>({num_steps - 1, size_t(1)});
+		auto S_0_T_left = xt::linalg::dot(X_bar_d, Q_f);
+		auto S_0_T = xt::linalg::dot(S_0_T_left, X_bar_d_transp);
+		auto S_0 = xt::stack(xtuple(S_0_zeros, S_0_T), 1);
+
+		std::cout << S_2 << std::endl;
+		std::cout << S_0 << std::endl;
+		std::cout << S_1 << std::endl;
 
 		// Solve Ricatti backwards in time
 		for(size_t t = num_steps; t > 0; --t)
 		{
 			// Get our current Ricatti Variables
-			auto current_S_2 = xt::view(S_2, t, xt::all(), xt::all());
-			auto current_S_1 = xt::view(S_1, t, xt::all(), size_t(1));
-			auto current_S_0 = xt::view(S_0, t, size_t(1), size_t(1));
+			xt::xarray<double> current_S_2 = xt::view(S_2, t, xt::all());
+			current_S_2.reshape({state_size, state_size});
+			auto current_S_1 = xt::view(S_1, t, xt::all());
+			auto current_S_0 = xt::view(S_0, t, size_t(1));
 			auto current_X_nominal = xt::view(X_nominal, t, xt::all());
 
 			// Linearize our system dynamics
@@ -116,12 +131,10 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			// Step S2, S1, and S0
 			auto B_t_transpose = xt::transpose(B_t, {1, 0});
 
-			auto inv_R = xt::linalg::inv(R);
+			//auto inv_R = xt::linalg::inv(R);
 
-			std::cout << current_S_2 << std::endl;
+			//auto temp2 = xt::linalg::dot(inv_R, B_t_transpose);
 
-			// auto temp1 = xt::linalg::dot(current_S_2, current_S_2);
-			// auto temp2 = xt::linalg::dot(inv_R, B_T_transpose);
 			// auto temp3 = xt::linalg::dot(temp1, temp2);
 			// auto temp4 = xt::linalg::dot(temp3, current_S_2);
 			// auto next_S_2 = current_S_2 + solver_dt * (Q - temp4);
