@@ -5,6 +5,7 @@
 #include "xtensor-blas/xlinalg.hpp"
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 using namespace av_structs;
 using namespace av_conversions;
@@ -111,11 +112,15 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			auto A_t = jacobian(current_X_nominal);
 			xt::xarray<double> B_t {0, 0, 0, 1, 1};
 			B_t.reshape({5, 1});
+
 			// Step S2, S1, and S0
 			auto B_t_transpose = xt::transpose(B_t, {1, 0});
 
 			auto inv_R = xt::linalg::inv(R);
-			//auto temp1 = xt::linalg::dot(current_S_2, current_S_2);
+
+			std::cout << current_S_2 << std::endl;
+
+			// auto temp1 = xt::linalg::dot(current_S_2, current_S_2);
 			// auto temp2 = xt::linalg::dot(inv_R, B_T_transpose);
 			// auto temp3 = xt::linalg::dot(temp1, temp2);
 			// auto temp4 = xt::linalg::dot(temp3, current_S_2);

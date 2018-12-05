@@ -6,6 +6,7 @@
 #include "xtensor/xbuilder.hpp"
 #include "xtensor/xio.hpp"
 #include "xtensor/xreducer.hpp"
+#include "xtensor/xtensor.hpp"
 #include "xtensor/xview.hpp"
 
 namespace iterative_lqr
