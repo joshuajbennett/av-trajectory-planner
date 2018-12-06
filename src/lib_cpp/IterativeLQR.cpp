@@ -94,10 +94,10 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		auto U_bar_desired = U_desired - U_nominal;
 
 		xt::xarray<double> X_bar_d =
-			xt::expand_dims(xt::view(X_bar_desired, num_steps-1, xt::all()), 1);
+			xt::expand_dims(xt::view(X_bar_desired, num_steps - 1, xt::all()), 1);
 		xt::xarray<double> X_bar_d_transp = xt::transpose(X_bar_d);
 
-		std::cout << X_bar_d << std::endl;
+		//std::cout << X_bar_d << std::endl;
 
 		// Initialize Ricatti variables S2
 		std::vector<size_t> shape = {num_steps, state_size, state_size};
@@ -132,33 +132,32 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			// Linearize our system dynamics
 			auto A_t = jacobian(curr_X_nominal);
 
-			std::cout << "A" << std::endl;
-			std::cout<< A_t << std::endl;
+			//std::cout << "A" << std::endl;
+			//std::cout<< A_t << std::endl;
 
 			// Step S2
 			auto S_2_dot = Q;
 			S_2_dot = S_2_dot + xt::linalg::dot(curr_S_2, A_t);
 
-			std::cout << S_2_dot << std::endl;
+			//std::cout << S_2_dot << std::endl;
 			S_2_dot = S_2_dot + xt::linalg::dot(xt::transpose(A_t), curr_S_2);
 
-			std::cout << S_2_dot << std::endl;
+			//std::cout << S_2_dot << std::endl;
 			auto temp = xt::linalg::dot(curr_S_2, B_t);
 
-			std::cout << S_2_dot << std::endl;
+			//std::cout << S_2_dot << std::endl;
 			temp = xt::linalg::dot(temp, inv_R);
 
-			std::cout << S_2_dot << std::endl;
+			//std::cout << S_2_dot << std::endl;
 			temp = xt::linalg::dot(temp, B_t_transp);
 
-			std::cout << S_2_dot << std::endl;
+			//std::cout << S_2_dot << std::endl;
 			S_2_dot = S_2_dot - xt::linalg::dot(temp, curr_S_2);
 
-			std::cout << S_2_dot << std::endl;
-
+			//std::cout << S_2_dot << std::endl;
 
 			// Step S1
-			
+
 			// Step S0
 
 			// auto temp2 = xt::linalg::dot(current_S_2, current_S_2);
@@ -185,19 +184,19 @@ AvTrajectory IterativeLQR::solveTrajectory()
 
 			// Calculate U Bar Star
 			xt::xarray<double> temp1 = xt::linalg::dot(inv_R, B_t_transp);
-			xt::xarray<double> temp2 = X_act - X_nom + 0.5 * current_S_1;
+			xt::xarray<double> temp2 = X_act - X_nom;
 			xt::xarray<double> temp3 = xt::transpose(temp2, {1, 0});
-			std::cout << "Worked!" << std::endl;
-			xt::xarray<double> temp4 = xt::linalg::dot(current_S_2, temp3);
-			xt::xarray<double> temp5 = xt::linalg::dot(temp1, temp4);
-
-			xt::xarray<double> U_bar_star = U_bar_d - temp5;
-			std::cout << "Worked!" << std::endl;
+			xt::xarray<double> temp4 = temp3 + 0.5 * current_S_1;
+			xt::xarray<double> temp5 = xt::linalg::dot(current_S_2, temp4);
+			xt::xarray<double> temp6 = xt::linalg::dot(temp1, temp5);
+			xt::xarray<double> U_bar_star = U_bar_d - xt::squeeze(temp6);
 			auto U_act = xt::view(U_actual, t, xt::all());
-			std::cout << "Worked!" << std::endl;
 			U_act = U_nom + U_bar_star;
 
-			std::cout << "Worked!" << std::endl;
+			xt::xarray<double> X_delta = dynamics(X_act, U_act);
+			auto X_next = xt::view(X_actual, t, xt::all());
+			X_next = X_act + solver_dt * X_delta;
+
 			// Apply forward prediction
 		}
 
