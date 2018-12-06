@@ -92,26 +92,28 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		auto X_bar_desired = X_desired - X_nominal;
 		auto U_bar_desired = U_desired - U_nominal;
 
-
 		// Initialize Ricatti variables S2, S1, S0
 		xt::xarray<double> S_2_zeros =
 			xt::zeros<double>({size_t(num_steps - 1), state_size, state_size});
-		auto S_2 = xt::stack(xtuple(S_2_zeros, Q_f), 1);
+		xt::xarray<double> S_2_T = Q_f;
+		S_2_T.reshape({size_t(1), state_size, state_size});
+		auto S_2 = xt::concatenate(xtuple(S_2_zeros, S_2_T), 0);
 
 		xt::xarray<double> S_1_zeros = xt::zeros<double>({size_t(num_steps - 1), state_size});
-		xt::xarray<double> X_bar_d = xt::expand_dims(xt::view(X_bar_desired, num_steps, xt::all()), 0);
+		xt::xarray<double> X_bar_d =
+			xt::expand_dims(xt::view(X_bar_desired, num_steps, xt::all()), 0);
 
 		xt::xarray<double> X_bar_d_transp = xt::transpose(X_bar_d, {1, 0});
-		
+
 		std::cout << Q_f << std::endl;
 		std::cout << X_bar_d << std::endl;
 		xt::xarray<double> S_1_T = -2.0 * xt::linalg::dot(Q_f, X_bar_d_transp);
-		xt::xarray<double> S_1 = xt::stack(xtuple(S_1_zeros, S_1_T), 1);
+		xt::xarray<double> S_1 = xt::concatenate(xtuple(S_1_zeros, S_1_T), 0);
 
 		xt::xarray<double> S_0_zeros = xt::zeros<double>({num_steps - 1, size_t(1)});
 		xt::xarray<double> S_0_T_left = xt::linalg::dot(X_bar_d, Q_f);
 		xt::xarray<double> S_0_T = xt::linalg::dot(S_0_T_left, X_bar_d_transp);
-		xt::xarray<double> S_0 = xt::stack(xtuple(S_0_zeros, S_0_T), 1);
+		xt::xarray<double> S_0 = xt::concatenate(xtuple(S_0_zeros, S_0_T), 0);
 
 		// std::cout << S_2 << std::endl;
 		// std::cout << S_0 << std::endl;
@@ -134,7 +136,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			// Step S2, S1, and S0
 			auto B_t_transpose = xt::transpose(B_t, {1, 0});
 
-			auto inv_R = xt::linalg::inv(R);
+			//auto inv_R = xt::linalg::inv(R);
 
 			// auto temp2 = xt::linalg::dot(current_S_2, current_S_2);
 			// auto temp2 = xt::linalg::dot(inv_R, B_t_transpose);
