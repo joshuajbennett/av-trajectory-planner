@@ -250,19 +250,20 @@ xt::xarray<double> IterativeLQR::jacobian(xt::xarray<double> state)
 	xt::xarray<double> output {
 		{0,
 		 0,
-		 state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * sin(state(AvState::PSI)),
-		 state(AvState::VEL_F) * sin(state(AvState::DELTA_F)) * cos(state(AvState::PSI)),
+		 -state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * sin(state(AvState::PSI)),
+		 -state(AvState::VEL_F) * sin(state(AvState::DELTA_F)) * cos(state(AvState::PSI)),
 		 cos(state(AvState::DELTA_F)) * cos(state(AvState::PSI))},
 		{0,
 		 0,
-		 -state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * cos(state(AvState::PSI)),
-		 state(AvState::VEL_F) * sin(state(AvState::DELTA_F)) * sin(state(AvState::PSI)),
-		 state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * sin(state(AvState::PSI))},
+		 state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * cos(state(AvState::PSI)),
+		 -state(AvState::VEL_F) * sin(state(AvState::DELTA_F)) * sin(state(AvState::PSI)),
+		 cos(state(AvState::DELTA_F)) * sin(state(AvState::PSI))},
 		{0,
 		 0,
 		 0,
-		 -state(AvState::VEL_F) * cos(state(AvState::DELTA_F)),
-		 sin(state(AvState::DELTA_F))},
+		 (state(AvState::VEL_F) * cos(state(AvState::DELTA_F))) /
+			 (vehicle_config.l_r + vehicle_config.l_f),
+		 (sin(state(AvState::DELTA_F))) / (vehicle_config.l_r + vehicle_config.l_f)},
 		{0, 0, 0, 0, 0},
 		{0, 0, 0, 0, 0}};
 	return (std::move(output));
@@ -273,7 +274,8 @@ xt::xarray<double> IterativeLQR::dynamics(xt::xarray<double> state, xt::xarray<d
 	xt::xarray<double> output {
 		state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * cos(state(AvState::PSI)),
 		state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * sin(state(AvState::PSI)),
-		state(AvState::VEL_F) * sin(state(AvState::DELTA_F)),
+		state(AvState::VEL_F) * sin(state(AvState::DELTA_F)) /
+			(vehicle_config.l_r + vehicle_config.l_f),
 		input(AvAction::TURN_RATE),
 		input(AvAction::ACCEL_F)};
 	return (std::move(output));
