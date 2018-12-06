@@ -89,6 +89,13 @@ class Vehicle(Widget):
         self.radangle = float(self.point[2])
         self.angle = float(np.degrees(self.radangle))
 
+    def set_position(self, x, y, psi, transformer):
+        coord_x, coord_y = transformer.get_coordinate(x, y)
+        self.pos = [float(coord_x), float(coord_y)]
+        self.points = getCurrPoints(coord_x, coord_y, self.outline)
+        self.radangle = psi
+        self.angle = float(np.degrees(self.radangle))
+
 def getCurrPoints(x, y, outline):
     points = []
     for idx, point in enumerate(outline):
@@ -123,6 +130,7 @@ def getTransformedOutlinePoints(av_trajectory, transformer):
 
 class Simulator(Widget):
     actorVehicle = ObjectProperty(None)
+    endVehicle = ObjectProperty(None)
     obstacles = ListProperty(None)
 
     def create_line_point(self, trajectory):
@@ -142,6 +150,9 @@ class Simulator(Widget):
         self.transformer = transformer
         self.actorVehicle.initialize(vehicleTrajectory, transformer)
         self.draw_trajectory()
+
+        self.endVehicle.initialize(vehicleTrajectory, transformer)
+        self.endVehicle.set_position(goalState.x, goalState.y, goalState.psi, transformer)
         
 
     def draw_trajectory(self):

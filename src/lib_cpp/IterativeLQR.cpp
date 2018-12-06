@@ -186,7 +186,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			// Calculate U Bar Star
 			xt::xarray<double> temp1 = xt::linalg::dot(inv_R, B_t_transp);
 			xt::xarray<double> temp2 = X_act - X_nom;
-			std::cout << temp2 << std::endl;
+			// std::cout << temp2 << std::endl;
 			xt::xarray<double> temp3 = xt::transpose(temp2, {1, 0});
 			xt::xarray<double> temp4 = xt::linalg::dot(current_S_2, temp3);
 			xt::xarray<double> temp5 = temp4 + 0.5 * current_S_1;
@@ -215,7 +215,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 						  X_nominal(t, AvState::DELTA_F),
 						  X_nominal(t, AvState::VEL_F)};
 
-		std::cout << av_state.x << ", " << av_state.y << std::endl;
+		// std::cout << av_state.x << ", " << av_state.y << std::endl;
 		traj.table.push_back(av_state);
 	}
 	traj.dt = solver_dt;
