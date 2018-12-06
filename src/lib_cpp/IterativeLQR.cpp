@@ -98,7 +98,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		// Initialize Ricatti variables S2
 		std::vector<size_t> shape = {num_steps, state_size, state_size};
 		xt::xarray<double> S_2 = xt::zeros<double>(shape);
-		auto S_2_T = xt::view(S_2, num_steps-1, xt::all(), xt::all());
+		auto S_2_T = xt::view(S_2, num_steps - 1, xt::all(), xt::all());
 		S_2_T = Q_f;
 
 		std::cout << S_2 << std::endl;
@@ -106,7 +106,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		// Initialize Ricatti variable S1
 		shape = {num_steps, state_size};
 		xt::xarray<double> S_1 = xt::zeros<double>(shape);
-		auto S_1_T = xt::view(S_1, num_steps-1, xt::all());
+		auto S_1_T = xt::view(S_1, num_steps - 1, xt::all());
 		S_1_T = xt::squeeze(-2.0 * xt::linalg::dot(Q_f, X_bar_d));
 
 		std::cout << S_1 << std::endl;
@@ -114,33 +114,34 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		// Initialize Ricatti variable S0
 		shape = {num_steps};
 		xt::xarray<double> S_0 = xt::zeros<double>(shape);
-		auto S_0_T = xt::view(S_0, num_steps-1);
+		auto S_0_T = xt::view(S_0, num_steps - 1);
 		xt::xarray<double> temp = xt::linalg::dot(X_bar_d_transp, Q_f);
 		S_0_T = xt::squeeze(xt::linalg::dot(temp, X_bar_d));
 
 		std::cout << S_0 << std::endl;
 
+		xt::xarray<double> B_t_transp {{0, 0, 0, 1, 1}};
+		xt::xarray<double> B_t = B_t_transp;
+		B_t.reshape({state_size, size_t(1)});
+
 		// Solve Ricatti backwards in time
-		for(size_t t = num_steps-1; t > 0; --t)
+		for(size_t t = num_steps - 1; t > 0; --t)
 		{
 			// Get our current Ricatti Variables
 			xt::xarray<double> curr_S_2 = xt::view(S_2, t, xt::all(), xt::all());
 			xt::xarray<double> curr_S_1 = xt::view(S_1, t, xt::all());
 			xt::xarray<double> curr_S_0 = xt::view(S_0, t);
 			xt::xarray<double> curr_X_nominal = xt::view(X_nominal, t, xt::all());
-			
+
 			std::cout << curr_S_2 << std::endl;
 			std::cout << curr_S_1 << std::endl;
 			std::cout << curr_S_0 << std::endl;
 			std::cout << curr_X_nominal << std::endl;
-			
+
 			// Linearize our system dynamics
 			auto A_t = jacobian(curr_X_nominal);
-			xt::xarray<double> B_t {0, 0, 0, 1, 1};
-			B_t.reshape({5, 1});
 
 			// Step S2, S1, and S0
-			auto B_t_transpose = xt::transpose(B_t, {1, 0});
 
 			//auto inv_R = xt::linalg::inv(R);
 
@@ -157,9 +158,6 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		xt::xarray<double> inv_R = xt::linalg::inv(R);
 		for(size_t t = 1; t < num_steps; ++t)
 		{
-			xt::xarray<double> B_t_transp {{0, 0, 0, 1, 1}};
-			xt::xarray<double> B_t = B_t_transp;
-			B_t.reshape({5, 1});
 			xt::xarray<double> current_S_2 = xt::view(S_2, t, xt::all(), xt::all());
 			xt::xarray<double> current_S_1 = xt::view(S_1, t, xt::all());
 			current_S_1.reshape({5, 1});
