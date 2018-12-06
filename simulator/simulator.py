@@ -125,7 +125,8 @@ def getTransformedOutlinePoints(av_trajectory, transformer):
         x, y = v.x * scale, v.y*scale
         points += [x, y]
     points += [points[0], points[1]]
-    print(points)
+    points += [points[0]+5, (points[1]+points[-3])/2]
+    points += [points[-6], points[-5]]
     return points
 
 class Simulator(Widget):
