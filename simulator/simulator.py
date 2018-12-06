@@ -133,7 +133,7 @@ class Simulator(Widget):
             points += list(self.transformer.get_coordinate(x, y))
         return points
 
-    def begin(self, obstacleTrajectories, vehicleTrajectory, transformer):
+    def begin(self, obstacleTrajectories, vehicleTrajectory, goalState, transformer):
         for trajectory in obstacleTrajectories:
             obstacle = Obstacle()
             self.add_widget(obstacle)
@@ -176,6 +176,9 @@ class SimulatorApp(App):
         # Plan the vehicle trajectory
         vehicleTrajectory = planner.solveTrajectory()
 
+        # Get Goal State
+        goalState = planner.getGoal()
+
         # Get the obstacle trajectories
         obstacleTrajectories = planner.getObstacleTrajectories()
 
@@ -187,7 +190,7 @@ class SimulatorApp(App):
 
         # Initialize the simulator
         sim = Simulator()
-        sim.begin(obstacleTrajectories, vehicleTrajectory, transformer)
+        sim.begin(obstacleTrajectories, vehicleTrajectory, goalState, transformer)
 
         # Update the simulator at the specified rate (simDt)
         Clock.schedule_interval(sim.update, simDt)
