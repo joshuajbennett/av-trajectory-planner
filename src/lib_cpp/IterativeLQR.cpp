@@ -83,7 +83,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 	// Initial Q and R
 	xt::xarray<double> Q = 100.0 * xt::eye<double>({state_size});
 	xt::xarray<double> Q_f = 10.0 * xt::eye<double>({state_size});
-	xt::xarray<double> R = 1.0 * xt::eye<double>({state_size});
+	xt::xarray<double> R = 1.0 * xt::eye<double>({action_size});
 	xt::xarray<double> inv_R = xt::linalg::inv(R);
 
 	// Iterations of iLQR
