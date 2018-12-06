@@ -256,13 +256,23 @@ xt::xarray<double> IterativeLQR::linearized_dynamics(xt::xarray<double> state)
 
 xt::xarray<double> IterativeLQR::dynamics(xt::xarray<double> state, xt::xarray<double> input)
 {
-	xt::xarray<double> output {
-		state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * cos(state(AvState::PSI)),
-		state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * sin(state(AvState::PSI)),
-		state(AvState::VEL_F) * sin(state(AvState::DELTA_F)) /
-			(vehicle_config.l_r + vehicle_config.l_f),
-		input(AvAction::TURN_RATE),
-		input(AvAction::ACCEL_F)};
+	double delta_f = state(AvState::DELTA_F);
+	double vel_f = state(AvState::VEL_F);
+	double scaled_max_delta_f = 2.0 * vehicle_config.max_delta_f;
+	double scaled_max_vel_f = 1.5 * vehicle_config.max_vel_f;
+	if(settings.constrain_steering_angle)
+	{
+		delta_f = scaled_max_delta_f * (sigmoid(delta_f - 1.0 / 2.0));
+	}
+	if(settings.constrain_velocity)
+	{
+		vel_f = scaled_max_vel_f * (sigmoid(vel_f - 1.0 / 3.0));
+	}
+	xt::xarray<double> output {vel_f * cos(delta_f) * cos(state(AvState::PSI)),
+							   vel_f * cos(delta_f) * sin(state(AvState::PSI)),
+							   vel_f * sin(delta_f) / (vehicle_config.l_r + vehicle_config.l_f),
+							   input(AvAction::TURN_RATE),
+							   input(AvAction::ACCEL_F)};
 	return (std::move(output));
 }
 
