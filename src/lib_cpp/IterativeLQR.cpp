@@ -14,14 +14,22 @@ namespace iterative_lqr
 {
 IterativeLQR::IterativeLQR() {}
 
-IterativeLQR::IterativeLQR(
-	AvState init, AvState goal, AvParams config, Boundary av_outline, double max_time, double dt)
+IterativeLQR::IterativeLQR(AvState init,
+						   AvState goal,
+						   AvParams config,
+						   Boundary av_outline,
+						   double max_time,
+						   double dt,
+						   double epsilon,
+						   unsigned long max_iterations)
 	: initial_state {init}
 	, goal_state {goal}
 	, vehicle_config {config}
 	, vehicle_outline {av_outline}
 	, solver_max_time {max_time}
 	, solver_dt {dt}
+	, epsilon_suboptimality {epsilon}
+	, max_iterations {max_iterations}
 {}
 
 IterativeLQR::~IterativeLQR() {}
@@ -87,7 +95,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 	xt::xarray<double> inv_R = xt::linalg::inv(R);
 
 	// Iterations of iLQR
-	for(int i = 0; i < 2; i++)
+	for(int i = 0; i < max_iterations; i++)
 	{
 		// Get x_bar and u_bar desired
 		auto X_bar_desired = X_desired - X_nominal;

@@ -22,13 +22,19 @@ public:
 			av_structs::AvParams config,
 			av_structs::Boundary av_outline,
 			double max_time = 5.0,
-			double dt = 0.01);
+			double dt = 0.01,
+			double epsilon_suboptimality = 0.01,
+			unsigned int max_iterations = 10);
 
 	~Planner();
 
 	void setGoal(av_structs::AvState goal);
 
+	av_structs::AvState getGoal();
+
 	void setInitialState(av_structs::AvState init);
+
+	av_structs::AvState getInitialState();
 
 	void setVehicleConfig(av_structs::AvParams config);
 
@@ -45,6 +51,10 @@ public:
 	void setSolverMaxTime(double max_time);
 
 	void setSolverTimeStep(double dt);
+
+	void setSolverEpsilon(double epsilon);
+
+	void setSolverMaxIterations(unsigned int max_iter);
 
 	void loadFromJson(std::string raw_json);
 
@@ -73,6 +83,10 @@ private:
 	double solver_max_time;
 
 	double solver_dt;
+
+	double epsilon_suboptimality;
+
+	unsigned int max_iterations;
 };
 } // namespace av_trajectory_planner
 

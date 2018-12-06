@@ -25,7 +25,9 @@ public:
 				 av_structs::AvParams config,
 				 av_structs::Boundary av_outline,
 				 double max_time = 5.0,
-				 double dt = 0.01);
+				 double dt = 0.01,
+				 double epsilon_suboptimality = 0.01,
+				 unsigned long max_iterations = 5);
 
 	~IterativeLQR();
 
@@ -59,6 +61,10 @@ private:
 	double solver_max_time;
 
 	double solver_dt;
+
+	double epsilon_suboptimality;
+
+	unsigned long max_iterations;
 };
 } // namespace iterative_lqr
 

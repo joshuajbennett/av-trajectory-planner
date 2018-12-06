@@ -11,14 +11,22 @@ namespace av_trajectory_planner
 {
 Planner::Planner() {}
 
-Planner::Planner(
-	AvState init, AvState goal, AvParams config, Boundary av_outline, double max_time, double dt)
+Planner::Planner(AvState init,
+				 AvState goal,
+				 AvParams config,
+				 Boundary av_outline,
+				 double max_time,
+				 double dt,
+				 double epsilon,
+				 unsigned int max_iter)
 	: initial_state {init}
 	, goal_state {goal}
 	, vehicle_config {config}
 	, vehicle_outline {av_outline}
 	, solver_max_time {max_time}
 	, solver_dt {dt}
+	, epsilon_suboptimality {epsilon}
+	, max_iterations {max_iter}
 {}
 
 Planner::~Planner() {}
@@ -28,9 +36,19 @@ void Planner::setGoal(AvState goal)
 	goal_state = goal;
 }
 
+AvState Planner::getGoal()
+{
+	return goal_state;
+}
+
 void Planner::setInitialState(AvState init)
 {
 	initial_state = init;
+}
+
+AvState Planner::getInitialState()
+{
+	return initial_state;
 }
 
 void Planner::setVehicleConfig(AvParams config)
@@ -78,6 +96,16 @@ void Planner::setSolverTimeStep(double dt)
 	solver_dt = dt;
 }
 
+void Planner::setSolverEpsilon(double epsilon)
+{
+	epsilon_suboptimality = epsilon;
+}
+
+void Planner::setSolverMaxIterations(unsigned int max_iter)
+{
+	max_iterations = max_iter;
+}
+
 void Planner::loadFromJson(std::string raw_json)
 {
 	Json::Value root;
@@ -102,6 +130,8 @@ void Planner::loadFromJson(std::string raw_json)
 	}
 	solver_max_time = root.get("solver_max_time", 5.0).asDouble();
 	solver_dt = root.get("solver_dt", 0.01).asDouble();
+	epsilon_suboptimality = root.get("epsilon_suboptimality", 0.01).asDouble();
+	max_iterations = root.get("max_iterations", 0.01).asInt();
 }
 
 std::string Planner::saveToJson()
@@ -119,6 +149,8 @@ std::string Planner::saveToJson()
 	root["obstacles"] = obstacle_list;
 	root["solver_max_time"] = solver_max_time;
 	root["solver_dt"] = solver_dt;
+	root["epsilon_suboptimality"] = epsilon_suboptimality;
+	root["max_iterations"] = max_iterations;
 
 	Json::StyledWriter writer;
 	return writer.write(root);
@@ -126,8 +158,14 @@ std::string Planner::saveToJson()
 
 AvTrajectory Planner::solveTrajectory()
 {
-	IterativeLQR ilqr = IterativeLQR(
-		initial_state, goal_state, vehicle_config, vehicle_outline, solver_max_time, solver_dt);
+	IterativeLQR ilqr = IterativeLQR(initial_state,
+									 goal_state,
+									 vehicle_config,
+									 vehicle_outline,
+									 solver_max_time,
+									 solver_dt,
+									 epsilon_suboptimality,
+									 max_iterations);
 
 	return std::move(ilqr.solveTrajectory());
 }

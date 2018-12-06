@@ -1,4 +1,5 @@
 {
+   "epsilon_suboptimality" : 0.01,
    "goal_state" : {
       "delta_f" : 0,
       "psi" : 0,
@@ -13,6 +14,7 @@
       "x" : 0,
       "y" : 0
    },
+   "max_iterations" : 10,
    "obstacles" : [
       {
          "dt" : 10,
