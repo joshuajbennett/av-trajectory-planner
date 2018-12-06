@@ -185,7 +185,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			// Calculate U Bar Star
 			xt::xarray<double> temp1 = xt::linalg::dot(inv_R, B_t_transp);
 			xt::xarray<double> temp2 = X_act - X_nom;
-			std::cout << temp2 << std::endl;
+			//std::cout << temp2 << std::endl;
 			xt::xarray<double> temp3 = xt::transpose(temp2, {1, 0});
 			xt::xarray<double> temp4 = xt::linalg::dot(current_S_2, temp3);
 			xt::xarray<double> temp5 = temp4 + 0.5 * current_S_1;
@@ -214,7 +214,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 						  X_nominal(t, AvState::DELTA_F),
 						  X_nominal(t, AvState::VEL_F)};
 
-		std::cout << av_state.x << ", " << av_state.y << std::endl;
+		// std::cout << av_state.x << ", " << av_state.y << std::endl;
 		traj.table.push_back(av_state);
 	}
 	traj.dt = settings.solver_dt;
@@ -224,25 +224,33 @@ AvTrajectory IterativeLQR::solveTrajectory()
 
 xt::xarray<double> IterativeLQR::linearized_dynamics(xt::xarray<double> state)
 {
-	xt::xarray<double> output {
-		{0,
-		 0,
-		 -state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * sin(state(AvState::PSI)),
-		 -state(AvState::VEL_F) * sin(state(AvState::DELTA_F)) * cos(state(AvState::PSI)),
-		 cos(state(AvState::DELTA_F)) * cos(state(AvState::PSI))},
-		{0,
-		 0,
-		 state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * cos(state(AvState::PSI)),
-		 -state(AvState::VEL_F) * sin(state(AvState::DELTA_F)) * sin(state(AvState::PSI)),
-		 cos(state(AvState::DELTA_F)) * sin(state(AvState::PSI))},
-		{0,
-		 0,
-		 0,
-		 (state(AvState::VEL_F) * cos(state(AvState::DELTA_F))) /
-			 (vehicle_config.l_r + vehicle_config.l_f),
-		 (sin(state(AvState::DELTA_F))) / (vehicle_config.l_r + vehicle_config.l_f)},
-		{0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0}};
+	double delta_f = state(AvState::DELTA_F);
+	double vel_f = state(AvState::VEL_F);
+	if(settings.constrain_steering_angle)
+	{
+		delta_f = 2.0 * vehicle_config.max_delta_f * (sigmoid(delta_f - 1.0 / 2.0));
+	}
+	if(settings.constrain_velocity)
+	{
+		vel_f = 1.5 * vehicle_config.max_vel_f * (sigmoid(vel_f - 1.0 / 3.0));
+	}
+	xt::xarray<double> output {{0,
+								0,
+								-vel_f * cos(delta_f) * sin(state(AvState::PSI)),
+								-state(vel_f) * sin(delta_f) * cos(state(AvState::PSI)),
+								cos(vel_f) * cos(state(AvState::PSI))},
+							   {0,
+								0,
+								vel_f * cos(delta_f) * cos(state(AvState::PSI)),
+								-vel_f * sin(delta_f) * sin(state(AvState::PSI)),
+								cos(delta_f) * sin(state(AvState::PSI))},
+							   {0,
+								0,
+								0,
+								(vel_f * cos(delta_f)) / (vehicle_config.l_r + vehicle_config.l_f),
+								sin(delta_f) / (vehicle_config.l_r + vehicle_config.l_f)},
+							   {0, 0, 0, 0, 0},
+							   {0, 0, 0, 0, 0}};
 	return (std::move(output));
 }
 
@@ -256,6 +264,11 @@ xt::xarray<double> IterativeLQR::dynamics(xt::xarray<double> state, xt::xarray<d
 		input(AvAction::TURN_RATE),
 		input(AvAction::ACCEL_F)};
 	return (std::move(output));
+}
+
+double IterativeLQR::sigmoid(double x)
+{
+	return 1.0 / (1.0 + exp(-x));
 }
 
 } // namespace iterative_lqr

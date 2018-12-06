@@ -107,7 +107,8 @@
       "l_f" : 1,
       "l_r" : 1,
       "max_accel_f" : 4,
-      "max_delta_f" : 0.5
+      "max_delta_f" : 0.5,
+      "max_vel_f" : 4
    },
    "vehicle_outline" : {
       "vertices" : [

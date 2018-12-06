@@ -47,6 +47,8 @@ private:
 
 	xt::xarray<double> linearized_dynamics(xt::xarray<double> state);
 
+	double sigmoid(double x);
+
 	av_structs::AvState initial_state;
 
 	av_structs::AvState goal_state;

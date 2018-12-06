@@ -121,6 +121,7 @@ struct AvParams
 	double l_f;
 	double max_delta_f;
 	double max_accel_f;
+	double max_vel_f;
 
 	void loadFromJson(Json::Value json)
 	{
@@ -128,6 +129,7 @@ struct AvParams
 		l_f = json.get("l_f", 0.0).asDouble();
 		max_delta_f = json.get("max_delta_f", 0.0).asDouble();
 		max_accel_f = json.get("max_accel_f", 0.0).asDouble();
+		max_vel_f = json.get("max_vel_f", 0.0).asDouble();
 	}
 
 	Json::Value saveToJson()
@@ -137,6 +139,7 @@ struct AvParams
 		json["l_f"] = l_f;
 		json["max_delta_f"] = max_delta_f;
 		json["max_accel_f"] = max_accel_f;
+		json["max_vel_f"] = max_accel_f;
 		return json;
 	}
 };

@@ -1,7 +1,7 @@
 {
    "goal_state" : {
       "delta_f" : 0,
-      "psi" : 0,
+      "psi" : 0.0,
       "vel_f" : 0,
       "x" : 5,
       "y" : 1
@@ -96,8 +96,8 @@
       }
    ],
    "settings" : {
-      "constrain_steering_angle" : true,
-      "constrain_velocity" : true,
+      "constrain_steering_angle" : false,
+      "constrain_velocity" : false,
       "epsilon_suboptimality" : 0.10000000000000001,
       "max_iterations" : 3,
       "max_time" : 6,
@@ -107,7 +107,8 @@
       "l_f" : 1,
       "l_r" : 1,
       "max_accel_f" : 4,
-      "max_delta_f" : 0.5
+      "max_delta_f" : 0.5,
+      "max_vel_f" : 4
    },
    "vehicle_outline" : {
       "vertices" : [

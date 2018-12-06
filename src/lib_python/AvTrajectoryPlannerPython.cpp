@@ -33,11 +33,12 @@ PYBIND11_MODULE(AvTrajectoryPlanner, m)
 		.def_readwrite("vel_f", &AvState::vel_f);
 	py::class_<AvParams>(m, "AvParams")
 		.def(py::init<>())
-		.def(py::init<double, double, double, double>())
+		.def(py::init<double, double, double, double, double>())
 		.def_readwrite("l_r", &AvParams::l_r)
 		.def_readwrite("l_f", &AvParams::l_r)
 		.def_readwrite("max_delta_f", &AvParams::max_delta_f)
-		.def_readwrite("max_accel_f", &AvParams::max_accel_f);
+		.def_readwrite("max_accel_f", &AvParams::max_accel_f)
+		.def_readwrite("max_vel_f", &AvParams::max_vel_f);
 	py::class_<Point>(m, "Point")
 		.def(py::init<>())
 		.def(py::init<double, double>())
