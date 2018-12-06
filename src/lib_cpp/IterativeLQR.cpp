@@ -138,6 +138,8 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			// Linearize our system dynamics
 			auto A_t = jacobian(curr_X_nominal);
 
+			std::cout << A_t << std::endl;
+
 			// Step S2
 			xt::xarray<double> S_2_dot = Q;
 			S_2_dot = S_2_dot + xt::linalg::dot(curr_S_2, A_t);
@@ -171,12 +173,6 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			S_0_dot = 0.25 * temp;
 			prev_S_0 = curr_S_0 + solver_dt * (S_0_dot);
 
-			// auto temp2 = xt::linalg::dot(current_S_2, current_S_2);
-			// auto temp2 = xt::linalg::dot(inv_R, B_t_transpose);
-
-			// auto temp3 = xt::linalg::dot(temp1, temp2);
-			// auto temp4 = xt::linalg::dot(temp3, current_S_2);
-			// auto next_S_2 = current_S_2 + solver_dt * (Q - temp4);
 		}
 		std::cout << S_2 << std::endl;
 		std::cout << S_1 << std::endl;
