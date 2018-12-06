@@ -11,22 +11,13 @@ namespace av_trajectory_planner
 {
 Planner::Planner() {}
 
-Planner::Planner(AvState init,
-				 AvState goal,
-				 AvParams config,
-				 Boundary av_outline,
-				 double max_time,
-				 double dt,
-				 double epsilon,
-				 unsigned int max_iter)
+Planner::Planner(
+	AvState init, AvState goal, AvParams config, Boundary av_outline, SolverParams solver_settings)
 	: initial_state {init}
 	, goal_state {goal}
 	, vehicle_config {config}
 	, vehicle_outline {av_outline}
-	, solver_max_time {max_time}
-	, solver_dt {dt}
-	, epsilon_suboptimality {epsilon}
-	, max_iterations {max_iter}
+	, settings {solver_settings}
 {}
 
 Planner::~Planner() {}
@@ -77,7 +68,7 @@ void Planner::appendObstacleStatic(ObstacleStatic obs_static)
 	static_traj.outline = obs_static.outline;
 	static_traj.table.push_back(obs_static.obs_pose);
 	static_traj.table.push_back(obs_static.obs_pose);
-	static_traj.dt = solver_max_time;
+	static_traj.dt = settings.max_time;
 	obstacles.push_back(std::move(static_traj));
 }
 
@@ -88,22 +79,42 @@ std::vector<ObstacleTrajectory> Planner::getObstacleTrajectories()
 
 void Planner::setSolverMaxTime(double max_time)
 {
-	solver_max_time = max_time;
+	settings.max_time = max_time;
 }
 
 void Planner::setSolverTimeStep(double dt)
 {
-	solver_dt = dt;
+	settings.solver_dt = dt;
 }
 
 void Planner::setSolverEpsilon(double epsilon)
 {
-	epsilon_suboptimality = epsilon;
+	settings.epsilon_suboptimality = epsilon;
 }
 
 void Planner::setSolverMaxIterations(unsigned int max_iter)
 {
-	max_iterations = max_iter;
+	settings.max_iterations = max_iter;
+}
+
+void Planner::enableVelocityConstraint()
+{
+	settings.constrain_velocity = true;
+}
+
+void Planner::disableVelocityConstraint()
+{
+	settings.constrain_velocity = false;
+}
+
+void Planner::enableSteeringConstraint()
+{
+	settings.constrain_steering_angle = true;
+}
+
+void Planner::disableSteeringConstraint()
+{
+	settings.constrain_steering_angle = false;
 }
 
 void Planner::loadFromJson(std::string raw_json)
@@ -128,10 +139,7 @@ void Planner::loadFromJson(std::string raw_json)
 		temp_obstacle.loadFromJson(obstacle);
 		obstacles.push_back(temp_obstacle);
 	}
-	solver_max_time = root.get("solver_max_time", 5.0).asDouble();
-	solver_dt = root.get("solver_dt", 0.01).asDouble();
-	epsilon_suboptimality = root.get("epsilon_suboptimality", 0.01).asDouble();
-	max_iterations = root.get("max_iterations", 0.01).asInt();
+	settings.loadFromJson(root["settings"]);
 }
 
 std::string Planner::saveToJson()
@@ -147,25 +155,15 @@ std::string Planner::saveToJson()
 		obstacle_list.append(obstacle.saveToJson());
 	}
 	root["obstacles"] = obstacle_list;
-	root["solver_max_time"] = solver_max_time;
-	root["solver_dt"] = solver_dt;
-	root["epsilon_suboptimality"] = epsilon_suboptimality;
-	root["max_iterations"] = max_iterations;
-
+	root["settings"] = settings.saveToJson();
 	Json::StyledWriter writer;
 	return writer.write(root);
 }
 
 AvTrajectory Planner::solveTrajectory()
 {
-	IterativeLQR ilqr = IterativeLQR(initial_state,
-									 goal_state,
-									 vehicle_config,
-									 vehicle_outline,
-									 solver_max_time,
-									 solver_dt,
-									 epsilon_suboptimality,
-									 max_iterations);
+	IterativeLQR ilqr =
+		IterativeLQR(initial_state, goal_state, vehicle_config, vehicle_outline, settings);
 
 	return std::move(ilqr.solveTrajectory());
 }

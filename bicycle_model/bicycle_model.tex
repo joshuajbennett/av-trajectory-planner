@@ -75,6 +75,7 @@ $$ a_f = \frac{\tau}{r} \left ( \frac {1} {m \cos {( \delta_f) }} + \frac {\left
 
 We will also assume that the steering angle is controlled by some steering rate input $w$
 
+
 $$ \left \lbrack \arraycolsep=1.4pt\def\arraystretch{1.5} \begin{array}{c}
     \dot{x} \\
     \dot{y} \\
@@ -94,5 +95,73 @@ $$ \left \lbrack \arraycolsep=1.4pt\def\arraystretch{1.5} \begin{array}{c}
     w \\
     a_f
 \end{array} \right \rbrack $$
+
+The linearized dynamics for this system are defined as:
+
+$$ \nabla f(X)  = \left \lbrack \arraycolsep=1.4pt\def\arraystretch{1.5} \begin{array}{ccccc}
+    0 & 0 & - v_f \cos {( \delta_f) } \sin{( \psi )} & -v_f \sin {( \delta_f) } \cos{( \psi )} & \cos {( \delta_f) } \cos{( \psi )}  \\
+    0 & 0 & v_f \cos {( \delta_f) } \cos{( \psi )} & -v_f \sin {( \delta_f) } \sin{( \psi )} & \cos {( \delta_f) } \sin{( \psi )} \\
+    0 & 0 & 0 & \frac {v_f \cos {( \delta_f) }} {l_r + l_f} & \frac {\sin {( \delta_f) }} {l_r + l_f} \\
+    0 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 0 \\
+\end{array} \right \rbrack + \left \lbrack \arraycolsep=1.4pt\def\arraystretch{1.5} \begin{array}{c}
+    0 \\
+    0 \\
+    0 \\
+    w \\
+    a_f
+\end{array} \right \rbrack $$
+
+
+Alternatively, we can clamp the vehicle velocity and steering angle with a sigmoid function:
+
+The sigmoid is defined as
+
+$$ \sigma(z) = \frac 1 {1+e^{-z}} $$
+
+The derivative of the sigmoid is
+
+$$ \frac d {dz} \sigma(z) = \sigma(z)(1 - \sigma(z))$$
+
+We will use the following constraints to clamp velocity and steering angle:
+
+$$ \delta_{fapplied} = 2\delta_{fmax}  \left ( \sigma(\delta_f) - \frac 1 2 \right )  $$
+
+$$ v_{fapplied} = 1.5v_{fmax}  \left ( \sigma(v_f) - \frac 1 3 \right )  $$
+
+Notice that we have clamped the vehicles reverse velocity. This results in the following dynamics:
+
+$$ \left \lbrack \arraycolsep=1.4pt\def\arraystretch{1.5} \begin{array}{c}
+    \dot{x} \\
+    \dot{y} \\
+    \dot{\psi} \\
+    \dot{\delta_f} \\
+    \dot{v_f}
+\end{array} \right \rbrack  = \left \lbrack \arraycolsep=1.4pt\def\arraystretch{1.5} \begin{array}{c}
+    1.5v_{fmax}  \left ( \sigma(v_f) - \frac 1 3 \right ) \cos {\left ( 2\delta_{fmax}  \left ( \sigma(\delta_f) - \frac 1 2 \right ) \right) } \cos{( \psi )} \\
+    1.5v_{fmax}  \left ( \sigma(v_f) - \frac 1 3 \right ) \cos {( 2\delta_{fmax}  \left ( \sigma(\delta_f) - \frac 1 2 \right ) ) } \sin{( \psi )} \\
+    \frac { 1.5v_{fmax}  \left ( \sigma(v_f) - \frac 1 3 \right ) \sin {( 2\delta_{fmax}  \left ( \sigma(\delta_f) - \frac 1 2 \right ) ) }} {l_r + l_f} \\
+    0 \\
+    0
+\end{array} \right \rbrack + \left \lbrack \arraycolsep=1.4pt\def\arraystretch{1.5} \begin{array}{c}
+    0 \\
+    0 \\
+    0 \\
+    w \\
+    a_f
+\end{array} \right \rbrack $$
+
+The linearized dynamics for this system are defined as:
+
+$$ \nabla f_{02}(X) = - 1.5v_{fmax}  \left ( \sigma(v_f) - \frac 1 3 \right ) \cos {\left ( 2\delta_{fmax}  \left ( \sigma(\delta_f) - \frac 1 2 \right ) \right) } \sin{( \psi )} $$
+$$ \nabla f_{03}(X) = - 1.5v_{fmax}  \left ( \sigma(v_f) - \frac 1 3 \right ) 2\delta_{fmax} \sigma(\delta_f) (1 - \sigma(\delta_f) ) \sin {\left ( 2\delta_{fmax}  \left ( \sigma(\delta_f) - \frac 1 2 \right ) \right) } \cos{( \psi )} $$
+$$ \nabla f_{04}(X) = 1.5v_{fmax}  \sigma(v_f) ( 1 - \sigma(v_f) ) \cos {\left ( 2\delta_{fmax}  \left ( \sigma(\delta_f) - \frac 1 2 \right ) \right) } \cos{( \psi )} $$
+
+$$ \nabla f_{12}(X) = 1.5v_{fmax}  \left ( \sigma(v_f) - \frac 1 3 \right ) \cos {\left ( 2\delta_{fmax}  \left ( \sigma(\delta_f) - \frac 1 2 \right ) \right) } \cos{( \psi )} $$
+$$ \nabla f_{13}(X) = - 1.5v_{fmax}  \left ( \sigma(v_f) - \frac 1 3 \right ) 2\delta_{fmax} \sigma(\delta_f) (1 - \sigma(\delta_f) ) \sin {\left ( 2\delta_{fmax}  \left ( \sigma(\delta_f) - \frac 1 2 \right ) \right) } \sin{( \psi )} $$
+$$ \nabla f_{14}(X) = 1.5v_{fmax}  \sigma(v_f) ( 1 - \sigma(v_f) ) \cos {\left ( 2\delta_{fmax}  \left ( \sigma(\delta_f) - \frac 1 2 \right ) \right) } \sin{( \psi )} $$
+
+$$ \nabla f_{23}(X) = \frac { 1.5v_{fmax}  \left ( \sigma(v_f) - \frac 1 3 \right ) 2\delta_{fmax} \sigma(\delta_f) (1 - \sigma(\delta_f) ) \cos {( 2\delta_{fmax}  \left ( \sigma(\delta_f) - \frac 1 2 \right ) ) }} {l_r + l_f}  $$
+$$ \nabla f_{24}(X) =  \frac { 1.5v_{fmax} \sigma(v_f) ( 1 - \sigma(v_f) ) \sin {( 2\delta_{fmax}  \left ( \sigma(\delta_f) - \frac 1 2 \right ) ) }} {l_r + l_f} $$
 
 \end{document}

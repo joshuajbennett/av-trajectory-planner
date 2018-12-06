@@ -8,6 +8,38 @@
 namespace av_structs
 {
 
+struct SolverParams
+{
+	double max_time;
+	double solver_dt;
+	double epsilon_suboptimality;
+	unsigned long max_iterations;
+	bool constrain_velocity;
+	bool constrain_steering_angle;
+
+	void loadFromJson(Json::Value json)
+	{
+		max_time = json.get("max_time", 0.0).asDouble();
+		solver_dt = json.get("solver_dt", 0.0).asDouble();
+		epsilon_suboptimality = json.get("epsilon_suboptimality", 0.0).asDouble();
+		max_iterations = json.get("max_iterations", 1).asInt();
+		constrain_velocity = json.get("constrain_velocity", false).asBool();
+		constrain_steering_angle = json.get("constrain_steering_angle", false).asBool();
+	}
+
+	Json::Value saveToJson()
+	{
+		Json::Value json;
+		json["max_time"] = max_time;
+		json["solver_dt"] = solver_dt;
+		json["epsilon_suboptimality"] = epsilon_suboptimality;
+		json["max_iterations"] = int(max_iterations);
+		json["constrain_velocity"] = constrain_velocity;
+		json["constrain_steering_angle"] = constrain_steering_angle;
+		return json;
+	}
+};
+
 ///
 /// Contains all state variables needed to define the state of an AV.
 ///

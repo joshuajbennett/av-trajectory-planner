@@ -24,10 +24,7 @@ public:
 				 av_structs::AvState goal,
 				 av_structs::AvParams config,
 				 av_structs::Boundary av_outline,
-				 double max_time = 5.0,
-				 double dt = 0.01,
-				 double epsilon_suboptimality = 0.01,
-				 unsigned long max_iterations = 5);
+				 av_structs::SolverParams solver_settings);
 
 	~IterativeLQR();
 
@@ -48,7 +45,7 @@ public:
 private:
 	xt::xarray<double> dynamics(xt::xarray<double> state, xt::xarray<double> input);
 
-	xt::xarray<double> jacobian(xt::xarray<double> state);
+	xt::xarray<double> linearized_dynamics(xt::xarray<double> state);
 
 	av_structs::AvState initial_state;
 
@@ -58,13 +55,7 @@ private:
 
 	av_structs::Boundary vehicle_outline;
 
-	double solver_max_time;
-
-	double solver_dt;
-
-	double epsilon_suboptimality;
-
-	unsigned long max_iterations;
+	av_structs::SolverParams settings;
 };
 } // namespace iterative_lqr
 
