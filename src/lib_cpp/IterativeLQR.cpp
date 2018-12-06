@@ -181,6 +181,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		std::cout << S_2 << std::endl;
 		std::cout << S_1 << std::endl;
 		std::cout << S_0 << std::endl;
+		// Apply forward prediction
 
 		xt::xarray<double> X_actual = steps * state;
 		xt::xarray<double> U_actual = xt::zeros<double>({num_steps, action_size});
@@ -211,35 +212,26 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			xt::xarray<double> X_delta = dynamics(X_act, U_act);
 			auto X_next = xt::view(X_actual, t, xt::all());
 			X_next = X_act + solver_dt * X_delta;
-
-			// Apply forward prediction
 		}
+		X_nominal = X_actual;
+		U_nominal = U_actual;
 
 		break;
 	} while(true);
-	//          Save S2, S1, and S0
-	//
-	//     Run forward prediction using Ricatti Solution
-	//
-	//          Compute linearization fo B
-	//
-	//          Get the Ricatti variables at this time step
-	//
-	//          calculate u bar star
-	//
-	//          convert to  u actual
-	//
-	//          update x actual (Euler method)
-	//     Check for convergence based on epsilon
-	// Return a trajectory
-
-	// Produce a dummy solution for now.
 
 	// Create the output trajectory.
 	AvTrajectory traj;
 	traj.outline = vehicle_outline;
-	AvState av_state {0, 0, 0.3, -0.3, 1.0};
-	traj.table.push_back(av_state);
+
+	for(size_t t = 1; t < num_steps; ++t)
+	{
+		AvState av_state {X_nominal(t, AvState::X),
+						  X_nominal(t, AvState::Y),
+						  X_nominal(t, AvState::PSI),
+						  X_nominal(t, AvState::DELTA_F),
+						  X_nominal(t, AvState::VEL_F)};
+		traj.table.push_back(av_state);
+	}
 	traj.dt = solver_dt;
 	traj.av_parameters = vehicle_config;
 	return traj;
