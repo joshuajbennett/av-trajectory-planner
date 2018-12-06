@@ -87,7 +87,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 	xt::xarray<double> inv_R = xt::linalg::inv(R);
 
 	// Iterations of iLQR
-	do
+	for(int i = 0; i < 2; i++)
 	{
 		// Get x_bar and u_bar desired
 		auto X_bar_desired = X_desired - X_nominal;
@@ -159,12 +159,10 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			S_1_dot = S_1_dot + xt::linalg::dot(temp, curr_S_1);
 
 			prev_S_1 = xt::squeeze(curr_S_1 + solver_dt * (S_1_dot));
-
 		}
 
 		xt::xarray<double> X_actual = steps * state;
 		xt::xarray<double> U_actual = xt::zeros<double>({num_steps, action_size});
-		xt::xarray<double> inv_R = xt::linalg::inv(R);
 		for(size_t t = 1; t < num_steps; ++t)
 		{
 			xt::xarray<double> current_S_2 = xt::view(S_2, t, xt::all(), xt::all());
@@ -180,9 +178,10 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			// Calculate U Bar Star
 			xt::xarray<double> temp1 = xt::linalg::dot(inv_R, B_t_transp);
 			xt::xarray<double> temp2 = X_act - X_nom;
+			std::cout << temp2 << std::endl;
 			xt::xarray<double> temp3 = xt::transpose(temp2, {1, 0});
-			xt::xarray<double> temp4 = temp3 + 0.5 * current_S_1;
-			xt::xarray<double> temp5 = xt::linalg::dot(current_S_2, temp4);
+			xt::xarray<double> temp4 = xt::linalg::dot(current_S_2, temp3);
+			xt::xarray<double> temp5 = temp4 + 0.5 * current_S_1;
 			xt::xarray<double> temp6 = xt::linalg::dot(temp1, temp5);
 			xt::xarray<double> U_bar_star = U_bar_d - xt::squeeze(temp6);
 			auto U_act = xt::view(U_actual, t, xt::all());
@@ -194,9 +193,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		}
 		X_nominal = X_actual;
 		U_nominal = U_actual;
-
-		break;
-	} while(true);
+	}
 
 	// Create the output trajectory.
 	AvTrajectory traj;
@@ -209,6 +206,8 @@ AvTrajectory IterativeLQR::solveTrajectory()
 						  X_nominal(t, AvState::PSI),
 						  X_nominal(t, AvState::DELTA_F),
 						  X_nominal(t, AvState::VEL_F)};
+
+		std::cout << av_state.x << ", " << av_state.y << std::endl;
 		traj.table.push_back(av_state);
 	}
 	traj.dt = solver_dt;
