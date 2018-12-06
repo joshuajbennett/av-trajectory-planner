@@ -1,19 +1,9 @@
-from kivy.app import App
-from kivy.uix.widget import Widget
-from kivy.graphics import Color, Ellipse, Line
-from kivy.clock import Clock
-from kivy.properties import NumericProperty, ReferenceListProperty,\
-    ObjectProperty, ListProperty
-from kivy.vector import Vector
-from simulatorObject import SimObstacle, SimVehicle
-import numpy as np
-from kivy.config import Config
-from kivy.core.window import Window
 import pdb
 import sys
-sys.path.append('../build')
+sys.path.append('build')
 import AvTrajectoryPlanner as av
 import argparse
+import numpy as np
 
 simDt = 1.0/30.0
 
@@ -23,7 +13,19 @@ parser.add_argument("--myWidth", type=int, default=1000, help="The width of the 
 parser.add_argument("--myHeight", type=int, default=500, help="The height of the simulator windows")
 parser.add_argument("--padding", type=int, default=3, help="The padding to the simulator in meters")
 
-args = parser.parse_args(sys.argv[2:])
+args, unknown = parser.parse_known_args() 
+sys.argv[1:] = unknown 
+
+from kivy.app import App
+from kivy.uix.widget import Widget
+from kivy.graphics import Color, Ellipse, Line
+from kivy.clock import Clock
+from kivy.properties import NumericProperty, ReferenceListProperty,\
+    ObjectProperty, ListProperty
+from kivy.vector import Vector
+from simulatorObject import SimObstacle, SimVehicle
+from kivy.config import Config
+from kivy.core.window import Window
 
 class Obstacle(Widget):
     obstacle = None
@@ -277,6 +279,8 @@ if __name__ == '__main__':
 
     # Use user specified width and height as window width and height
     Window.size = (args.myWidth, args.myHeight)
+
+    print(args)
 
     # Set the background of the simulator to white
     Window.clearcolor = (1, 1, 1, 1)
