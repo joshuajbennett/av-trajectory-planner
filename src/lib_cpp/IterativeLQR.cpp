@@ -228,17 +228,19 @@ xt::xarray<double> IterativeLQR::linearized_dynamics(xt::xarray<double> state)
 	double vel_f = state(AvState::VEL_F);
 	if(settings.constrain_steering_angle)
 	{
+		std::cout << "HEY!" << std::endl;
 		delta_f = 2.0 * vehicle_config.max_delta_f * (sigmoid(delta_f - 1.0 / 2.0));
 	}
 	if(settings.constrain_velocity)
 	{
+		std::cout << "HEY!" << std::endl;
 		vel_f = 1.5 * vehicle_config.max_vel_f * (sigmoid(vel_f - 1.0 / 3.0));
 	}
 	xt::xarray<double> output {{0,
 								0,
 								-vel_f * cos(delta_f) * sin(state(AvState::PSI)),
-								-state(vel_f) * sin(delta_f) * cos(state(AvState::PSI)),
-								cos(vel_f) * cos(state(AvState::PSI))},
+								-vel_f * sin(delta_f) * cos(state(AvState::PSI)),
+								cos(delta_f) * cos(state(AvState::PSI))},
 							   {0,
 								0,
 								vel_f * cos(delta_f) * cos(state(AvState::PSI)),
@@ -262,10 +264,12 @@ xt::xarray<double> IterativeLQR::dynamics(xt::xarray<double> state, xt::xarray<d
 	double scaled_max_vel_f = 1.5 * vehicle_config.max_vel_f;
 	if(settings.constrain_steering_angle)
 	{
+		std::cout << "HEY!" << std::endl;
 		delta_f = scaled_max_delta_f * (sigmoid(delta_f - 1.0 / 2.0));
 	}
 	if(settings.constrain_velocity)
 	{
+		std::cout << "HEY!" << std::endl;
 		vel_f = scaled_max_vel_f * (sigmoid(vel_f - 1.0 / 3.0));
 	}
 	xt::xarray<double> output {vel_f * cos(delta_f) * cos(state(AvState::PSI)),
