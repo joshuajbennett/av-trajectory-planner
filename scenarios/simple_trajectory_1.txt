@@ -1,5 +1,4 @@
 {
-   "epsilon_suboptimality" : 0.01,
    "goal_state" : {
       "delta_f" : 0,
       "psi" : 0,
@@ -14,10 +13,9 @@
       "x" : 0,
       "y" : 0
    },
-   "max_iterations" : 10,
    "obstacles" : [
       {
-         "dt" : 10,
+         "dt" : 6,
          "outline" : {
             "vertices" : [
                {
@@ -97,13 +95,20 @@
          ]
       }
    ],
-   "solver_dt" : 0.10000000000000001,
-   "solver_max_time" : 10,
+   "settings" : {
+      "constrain_steering_angle" : true,
+      "constrain_velocity" : true,
+      "epsilon_suboptimality" : 0.10000000000000001,
+      "max_iterations" : 3,
+      "max_time" : 6,
+      "solver_dt" : 0.01
+   },
    "vehicle_config" : {
       "l_f" : 1,
       "l_r" : 1,
       "max_accel_f" : 4,
-      "max_delta_f" : 0.5
+      "max_delta_f" : 0.5,
+      "max_vel_f" : 4
    },
    "vehicle_outline" : {
       "vertices" : [

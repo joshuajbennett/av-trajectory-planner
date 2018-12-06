@@ -3,7 +3,7 @@ sys.path.append('build')
 import AvTrajectoryPlanner as av
 import math
 
-planner = av.Planner(av.AvState(0,0,0,0,0), av.AvState(5,1,0,0,0), av.AvParams(1.0,1.0,0.5,4), av.Boundary([av.Point(0.5,0.5), av.Point(-0.5, 0.5), av.Point(-0.5, -0.5), av.Point(0.5, -0.5)]), 10, 0.1)
+planner = av.Planner(av.AvState(0,0,0,0,0), av.AvState(5,1,0,0,0), av.AvParams(1.0,1.0,0.5,4, 3), av.Boundary([av.Point(0.5,0.5), av.Point(-0.5, 0.5), av.Point(-0.5, -0.5), av.Point(0.5, -0.5)]), av.SolverParams(6, 0.01, 0.1, 3, True, True))
 
 obstacle = av.ObstacleStatic()
 obstacle.outline = av.Boundary([av.Point(0.5,0.2), av.Point(-0.5, 0.2), av.Point(-0.5, -0.2), av.Point(0.5, -0.2)])
