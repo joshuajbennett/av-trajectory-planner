@@ -156,18 +156,19 @@ AvTrajectory IterativeLQR::solveTrajectory()
 
 			// Calculate U Bar Star
 			xt::xarray<double> temp1 = xt::linalg::dot(inv_R, B_t_transp);
-			xt::xarray<double> temp2 = X_act - X_nom;
+			xt::xarray<double> temp2 = X_act - X_nom + 0.5 * current_S_1;
 			xt::xarray<double> temp3 = xt::transpose(temp2, {1, 0});
+			std::cout << "Worked!" << std::endl;
 			xt::xarray<double> temp4 = xt::linalg::dot(current_S_2, temp3);
-			std::cout << temp1 << std::endl;
-			std::cout << temp4 << std::endl;
 			xt::xarray<double> temp5 = xt::linalg::dot(temp1, temp4);
-			xt::xarray<double> U_bar_star = U_bar_d - temp5 + 0.5 * current_S_1;
+
+			xt::xarray<double> U_bar_star = U_bar_d - temp5;
+			std::cout << "Worked!" << std::endl;
 			auto U_act = xt::view(U_actual, t, xt::all());
-
+			std::cout << "Worked!" << std::endl;
 			U_act = U_nom + U_bar_star;
-			xt::view(U_actual, t, xt::all()) = U_act;
 
+			std::cout << "Worked!" << std::endl;
 			// Apply forward prediction
 		}
 

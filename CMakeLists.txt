@@ -30,15 +30,21 @@ find_package(xtl REQUIRED)
 find_package(xtensor REQUIRED)
 find_package(xtensor-blas REQUIRED)
 
-add_library(IterativeLQR SHARED src/lib_cpp/IterativeLQR.cpp)
+# add_library(IterativeLQR SHARED src/lib_cpp/IterativeLQR.cpp)
+#
+# target_include_directories(IterativeLQR PRIVATE ${xtl_INCLUDE_DIRS} ${xtensor_INCLUDE_DIRS} ${xtensor_blas_INCLUDE_DIRS})
+# target_link_libraries(IterativeLQR xtensor  ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+#
+# add_library(AvTrajectoryPlanner SHARED src/lib_cpp/AvTrajectoryPlanner.cpp)
+#
+# target_include_directories(AvTrajectoryPlanner PRIVATE ${JSONCPP_INCLUDE_DIRS})
+# target_link_libraries(AvTrajectoryPlanner ${JSONCPP_LIBRARIES} IterativeLQR)
 
-target_include_directories(IterativeLQR PRIVATE ${xtl_INCLUDE_DIRS} ${xtensor_INCLUDE_DIRS} ${xtensor_blas_INCLUDE_DIRS})
-target_link_libraries(IterativeLQR xtensor  ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+add_library(AvTrajectoryPlanner SHARED src/lib_cpp/AvTrajectoryPlanner.cpp src/lib_cpp/IterativeLQR.cpp)
 
-add_library(AvTrajectoryPlanner SHARED src/lib_cpp/AvTrajectoryPlanner.cpp)
+target_include_directories(AvTrajectoryPlanner PRIVATE ${JSONCPP_INCLUDE_DIRS} ${xtl_INCLUDE_DIRS} ${xtensor_INCLUDE_DIRS} ${xtensor_blas_INCLUDE_DIRS})
+target_link_libraries(AvTrajectoryPlanner ${JSONCPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
-target_include_directories(AvTrajectoryPlanner PRIVATE ${JSONCPP_INCLUDE_DIRS})
-target_link_libraries(AvTrajectoryPlanner ${JSONCPP_LIBRARIES} IterativeLQR)
 
 # Who needs tests anyways?
 
