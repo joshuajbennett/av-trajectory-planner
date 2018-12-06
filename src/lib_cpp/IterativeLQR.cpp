@@ -105,15 +105,11 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		auto S_2_T = xt::view(S_2, num_steps - 1, xt::all(), xt::all());
 		S_2_T = Q_f;
 
-		std::cout << S_2 << std::endl;
-
 		// Initialize Ricatti variable S1
 		shape = {num_steps, state_size};
 		xt::xarray<double> S_1 = xt::zeros<double>(shape);
 		auto S_1_T = xt::view(S_1, num_steps - 1, xt::all());
 		S_1_T = -2.0 * xt::squeeze(xt::linalg::dot(Q_f, X_bar_d));
-
-		std::cout << S_1 << std::endl;
 
 		// Initialize Ricatti variable S0
 		shape = {num_steps};
@@ -122,12 +118,8 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		xt::xarray<double> temp = xt::linalg::dot(X_bar_d_transp, Q_f);
 		S_0_T = xt::squeeze(xt::linalg::dot(temp, X_bar_d));
 
-		std::cout << S_0 << std::endl;
-
-		xt::xarray<double> B_t_transp {{0, 0, 0, 1, 1}};
-		xt::xarray<double> B_t = B_t_transp;
-		B_t.reshape({state_size, size_t(1)});
-
+		xt::xarray<double> B_t_transp {{0, 0, 0, 1, 0}, {0, 0, 0, 0, 1}};
+		xt::xarray<double> B_t = xt::transpose(B_t_transp, {1, 0});
 		// Solve Ricatti backwards in time
 		for(size_t t = num_steps - 1; t > 0; --t)
 		{
@@ -136,11 +128,6 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			xt::xarray<double> curr_S_1 = xt::view(S_1, t, xt::all());
 			xt::xarray<double> curr_S_0 = xt::view(S_0, t);
 			xt::xarray<double> curr_X_nominal = xt::view(X_nominal, t, xt::all());
-
-			std::cout << curr_S_2 << std::endl;
-			std::cout << curr_S_1 << std::endl;
-			std::cout << curr_S_0 << std::endl;
-			std::cout << curr_X_nominal << std::endl;
 
 			// Linearize our system dynamics
 			auto A_t = jacobian(curr_X_nominal);
@@ -181,7 +168,6 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			// auto temp4 = xt::linalg::dot(temp3, current_S_2);
 			// auto next_S_2 = current_S_2 + solver_dt * (Q - temp4);
 		}
-
 		xt::xarray<double> X_actual = steps * state;
 		xt::xarray<double> U_actual = xt::zeros<double>({num_steps, action_size});
 		xt::xarray<double> inv_R = xt::linalg::inv(R);
@@ -189,24 +175,26 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		{
 			xt::xarray<double> current_S_2 = xt::view(S_2, t, xt::all(), xt::all());
 			xt::xarray<double> current_S_1 = xt::view(S_1, t, xt::all());
-			current_S_1.reshape({5, 1});
-			xt::xarray<double> current_S_0 = xt::view(S_0, t, size_t(1));
-
+			current_S_1.reshape({state_size, size_t(1)});
+			xt::xarray<double> current_S_0 = xt::view(S_0, t);
 			xt::xarray<double> U_bar_d = xt::view(U_bar_desired, t, xt::all());
 			xt::xarray<double> X_act = xt::view(X_actual, size_t(t - 1), xt::all());
 			xt::xarray<double> X_nom = xt::view(X_nominal, t, xt::all());
 			xt::xarray<double> U_nom = xt::view(U_nominal, t, xt::all());
-			X_nom.reshape({1, 5});
+			X_nom.reshape({size_t(1), state_size});
 
 			// Calculate U Bar Star
-			xt::xarray<double> temp1 = xt::linalg::dot(inv_R, B_t);
+			xt::xarray<double> temp1 = xt::linalg::dot(inv_R, B_t_transp);
 			xt::xarray<double> temp2 = X_act - X_nom;
 			xt::xarray<double> temp3 = xt::transpose(temp2, {1, 0});
 			xt::xarray<double> temp4 = xt::linalg::dot(current_S_2, temp3);
-			xt::xarray<double> temp5 = xt::linalg::dot(temp2, temp4);
+			std::cout << temp1 << std::endl;
+			std::cout << temp4 << std::endl;
+			xt::xarray<double> temp5 = xt::linalg::dot(temp1, temp4);
 			xt::xarray<double> U_bar_star = U_bar_d - temp5 + 0.5 * current_S_1;
 			auto U_act = xt::view(U_actual, t, xt::all());
-			U_act = xt::squeeze(U_nom + U_bar_star);
+
+			U_act = U_nom + U_bar_star;
 			xt::view(U_actual, t, xt::all()) = U_act;
 
 			// Apply forward prediction
