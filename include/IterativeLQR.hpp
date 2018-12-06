@@ -44,9 +44,9 @@ public:
 	av_structs::AvTrajectory solveTrajectory();
 
 private:
-	xt::xarray<double> dynamics(xt::xarray<double> input, double turn_rate, double accel_f);
+	xt::xarray<double> dynamics(xt::xarray<double> state, xt::xarray<double> input);
 
-	xt::xarray<double> jacobian(xt::xarray<double> input);
+	xt::xarray<double> jacobian(xt::xarray<double> state);
 
 	av_structs::AvState initial_state;
 

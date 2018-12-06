@@ -69,14 +69,14 @@ AvTrajectory IterativeLQR::solveTrajectory()
 	size_t state_size = AvState::SIZE;
 	size_t action_size = AvAction::SIZE;
 
-	auto steps = xt::ones<double>({num_steps, size_t(1)});
+	xt::xarray<double> steps = xt::ones<double>({num_steps, size_t(1)});
 
-	auto X_desired = steps * goal;
-	auto U_desired = xt::zeros<double>({num_steps, action_size});
+	xt::xarray<double> X_desired = steps * goal;
+	xt::xarray<double> U_desired = xt::zeros<double>({num_steps, action_size});
 
 	// Initialize nominal
-	auto X_nominal = steps * state;
-	auto U_nominal = xt::zeros<double>({num_steps, action_size});
+	xt::xarray<double> X_nominal = steps * state;
+	xt::xarray<double> U_nominal = xt::zeros<double>({num_steps, action_size});
 	// Define optimality epsilon
 	double epsilon = 0.001;
 
@@ -146,6 +146,39 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			// auto next_S_2 = current_S_2 + solver_dt * (Q - temp4);
 		}
 
+		xt::xarray<double> X_actual = steps * state;
+		xt::xarray<double> U_actual = xt::zeros<double>({num_steps, action_size});
+		xt::xarray<double> inv_R = xt::linalg::inv(R);
+		for(size_t t = 1; t < num_steps; ++t)
+		{
+			xt::xarray<double> B_t_transp {{0, 0, 0, 1, 1}};
+			xt::xarray<double> B_t = B_t_transp;
+			B_t.reshape({5, 1});
+			xt::xarray<double> current_S_2 = xt::view(S_2, t, xt::all(), xt::all());
+			xt::xarray<double> current_S_1 = xt::view(S_1, t, xt::all());
+			current_S_1.reshape({5, 1});
+			xt::xarray<double> current_S_0 = xt::view(S_0, t, size_t(1));
+
+			xt::xarray<double> U_bar_d = xt::view(U_bar_desired, t, xt::all());
+			xt::xarray<double> X_act = xt::view(X_actual, size_t(t - 1), xt::all());
+			xt::xarray<double> X_nom = xt::view(X_nominal, t, xt::all());
+			xt::xarray<double> U_nom = xt::view(U_nominal, t, xt::all());
+			X_nom.reshape({1, 5});
+
+			// Calculate U Bar Star
+			xt::xarray<double> temp1 = xt::linalg::dot(inv_R, B_t);
+			xt::xarray<double> temp2 = X_act - X_nom;
+			xt::xarray<double> temp3 = xt::transpose(temp2, {1, 0});
+			xt::xarray<double> temp4 = xt::linalg::dot(current_S_2, temp3);
+			xt::xarray<double> temp5 = xt::linalg::dot(temp2, temp4);
+			xt::xarray<double> U_bar_star = U_bar_d - temp5 + 0.5 * current_S_1;
+			auto U_act = xt::view(U_actual, t, xt::all());
+			U_act = xt::squeeze(U_nom + U_bar_star);
+			xt::view(U_actual, t, xt::all()) = U_act;
+
+			// Apply forward prediction
+		}
+
 		break;
 	} while(true);
 	//          Save S2, S1, and S0
@@ -176,38 +209,37 @@ AvTrajectory IterativeLQR::solveTrajectory()
 	return traj;
 }
 
-xt::xarray<double> IterativeLQR::jacobian(xt::xarray<double> input)
+xt::xarray<double> IterativeLQR::jacobian(xt::xarray<double> state)
 {
 	xt::xarray<double> output {
 		{0,
 		 0,
-		 input(AvState::VEL_F) * cos(input(AvState::DELTA_F)) * sin(input(AvState::PSI)),
-		 input(AvState::VEL_F) * sin(input(AvState::DELTA_F)) * cos(input(AvState::PSI)),
-		 cos(input(AvState::DELTA_F)) * cos(input(AvState::PSI))},
+		 state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * sin(state(AvState::PSI)),
+		 state(AvState::VEL_F) * sin(state(AvState::DELTA_F)) * cos(state(AvState::PSI)),
+		 cos(state(AvState::DELTA_F)) * cos(state(AvState::PSI))},
 		{0,
 		 0,
-		 -input(AvState::VEL_F) * cos(input(AvState::DELTA_F)) * cos(input(AvState::PSI)),
-		 input(AvState::VEL_F) * sin(input(AvState::DELTA_F)) * sin(input(AvState::PSI)),
-		 input(AvState::VEL_F) * cos(input(AvState::DELTA_F)) * sin(input(AvState::PSI))},
+		 -state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * cos(state(AvState::PSI)),
+		 state(AvState::VEL_F) * sin(state(AvState::DELTA_F)) * sin(state(AvState::PSI)),
+		 state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * sin(state(AvState::PSI))},
 		{0,
 		 0,
 		 0,
-		 -input(AvState::VEL_F) * cos(input(AvState::DELTA_F)),
-		 sin(input(AvState::DELTA_F))},
+		 -state(AvState::VEL_F) * cos(state(AvState::DELTA_F)),
+		 sin(state(AvState::DELTA_F))},
 		{0, 0, 0, 0, 0},
 		{0, 0, 0, 0, 0}};
 	return (std::move(output));
 }
 
-xt::xarray<double>
-IterativeLQR::dynamics(xt::xarray<double> input, double turn_rate, double accel_f)
+xt::xarray<double> IterativeLQR::dynamics(xt::xarray<double> state, xt::xarray<double> input)
 {
 	xt::xarray<double> output {
-		input(AvState::VEL_F) * cos(input(AvState::DELTA_F)) * cos(input(AvState::PSI)),
-		input(AvState::VEL_F) * cos(input(AvState::DELTA_F)) * sin(input(AvState::PSI)),
-		input(AvState::VEL_F) * sin(input(AvState::DELTA_F)),
-		turn_rate,
-		accel_f};
+		state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * cos(state(AvState::PSI)),
+		state(AvState::VEL_F) * cos(state(AvState::DELTA_F)) * sin(state(AvState::PSI)),
+		state(AvState::VEL_F) * sin(state(AvState::DELTA_F)),
+		input(AvAction::TURN_RATE),
+		input(AvAction::ACCEL_F)};
 	return (std::move(output));
 }
 
