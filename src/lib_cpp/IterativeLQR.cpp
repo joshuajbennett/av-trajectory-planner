@@ -125,20 +125,20 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		for(size_t t = num_steps - 1; t > 0; --t)
 		{
 			// Get current Ricatti Variables
-			xt::xarray<double> curr_S_2 = xt::view(S_2, t, xt::all(), xt::all());
-			xt::xarray<double> curr_S_1 = xt::view(S_1, t, xt::all());
-			xt::xarray<double> curr_S_0 = xt::view(S_0, t);
+			xt::xarray<double> curr_S_2 = xt::eval(xt::view(S_2, t, xt::all(), xt::all()));
+			xt::xarray<double> curr_S_1 = xt::eval(xt::view(S_1, t, xt::all()));
+			xt::xarray<double> curr_S_0 = xt::eval(xt::view(S_0, t));
 			xt::xarray<double> curr_X_nominal = xt::view(X_nominal, t, xt::all());
 
 			// Get previous Ricatti Variables
-			xt::xarray<double> prev_S_2 = xt::view(S_2, t - 1, xt::all(), xt::all());
-			xt::xarray<double> prev_S_1 = xt::view(S_1, t - 1, xt::all());
-			xt::xarray<double> prev_S_0 = xt::view(S_0, t - 1);
+			auto prev_S_2 = xt::view(S_2, t - 1, xt::all(), xt::all());
+			auto prev_S_1 = xt::view(S_1, t - 1, xt::all());
+			auto prev_S_0 = xt::view(S_0, t - 1);
 
 			// Linearize our system dynamics
 			auto A_t = jacobian(curr_X_nominal);
 
-			std::cout << A_t << std::endl;
+			// std::cout << A_t << std::endl;
 
 			// Step S2
 			xt::xarray<double> S_2_dot = Q;
@@ -148,7 +148,9 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			temp = xt::linalg::dot(temp, inv_R);
 			temp = xt::linalg::dot(temp, B_t_transp);
 			S_2_dot = S_2_dot - xt::linalg::dot(temp, curr_S_2);
-			prev_S_2 = curr_S_2 + solver_dt * (S_2_dot);
+			prev_S_2 = xt::eval(curr_S_2 + solver_dt * (S_2_dot));
+
+			std::cout << prev_S_2 << std::endl;
 
 			// Step S1
 			xt::xarray<double> S_1_dot = -2.0 * xt::linalg::dot(Q, X_bar_d);
@@ -158,7 +160,9 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			temp = xt::linalg::dot(xt::linalg::dot(curr_S_2, B_t), inv_R);
 			temp = xt::transpose(A_t) - xt::linalg::dot(temp, B_t_transp);
 			S_1_dot = S_1_dot + xt::linalg::dot(temp, curr_S_1);
-			prev_S_1 = curr_S_1 + solver_dt * (S_1_dot);
+			prev_S_1 = xt::eval(curr_S_1 + solver_dt * (S_1_dot));
+
+			std::cout << prev_S_1 << std::endl;
 
 			// Step S0
 			xt::xarray<double> S_0_dot = xt::linalg::dot(Q, X_bar_d);
@@ -171,12 +175,16 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			temp = xt::linalg::dot(temp, B_t_transp);
 			temp = xt::linalg::dot(temp, curr_S_1);
 			S_0_dot = 0.25 * temp;
-			prev_S_0 = curr_S_0 + solver_dt * (S_0_dot);
+			prev_S_0 = xt::eval(curr_S_0 + solver_dt * (S_0_dot));
+
+			std::cout << prev_S_0 << std::endl;
+
+			std::cout << S_2 << std::endl;
+			std::cout << S_1 << std::endl;
+			std::cout << S_0 << std::endl;
 
 		}
-		std::cout << S_2 << std::endl;
-		std::cout << S_1 << std::endl;
-		std::cout << S_0 << std::endl;
+
 
 		xt::xarray<double> X_actual = steps * state;
 		xt::xarray<double> U_actual = xt::zeros<double>({num_steps, action_size});
