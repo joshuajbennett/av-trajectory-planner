@@ -3,8 +3,8 @@
       "delta_f" : 0,
       "psi" : 1.5,
       "vel_f" : 0,
-      "x" : 2,
-      "y" : 10
+      "x" : -10,
+      "y" : -5
    },
    "initial_state" : {
       "delta_f" : 0,
@@ -19,7 +19,7 @@
       "constrain_steering_angle" : false,
       "constrain_velocity" : false,
       "epsilon_suboptimality" : 0.10000000000000001,
-      "max_iterations" : 10,
+      "max_iterations" : 3,
       "max_time" : 10,
       "solver_dt" : 0.0001
    },
