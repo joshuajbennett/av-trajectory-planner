@@ -125,9 +125,9 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		for(size_t t = num_steps - 1; t > 0; --t)
 		{
 			// Get current Ricatti Variables
-			xt::xarray<double> curr_S_2 = xt::eval(xt::view(S_2, t, xt::all(), xt::all()));
-			xt::xarray<double> curr_S_1 = xt::eval(xt::view(S_1, t, xt::all()));
-			xt::xarray<double> curr_S_0 = xt::eval(xt::view(S_0, t));
+			xt::xarray<double> curr_S_2 = xt::view(S_2, t, xt::all(), xt::all());
+			xt::xarray<double> curr_S_1 = xt::expand_dims(xt::view(S_1, t, xt::all()), 1);
+			xt::xarray<double> curr_S_0 = xt::view(S_0, t);
 			xt::xarray<double> curr_X_nominal = xt::view(X_nominal, t, xt::all());
 
 			// Get previous Ricatti Variables
@@ -138,8 +138,6 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			// Linearize our system dynamics
 			auto A_t = jacobian(curr_X_nominal);
 
-			// std::cout << A_t << std::endl;
-
 			// Step S2
 			xt::xarray<double> S_2_dot = Q;
 			S_2_dot = S_2_dot + xt::linalg::dot(curr_S_2, A_t);
@@ -148,9 +146,7 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			temp = xt::linalg::dot(temp, inv_R);
 			temp = xt::linalg::dot(temp, B_t_transp);
 			S_2_dot = S_2_dot - xt::linalg::dot(temp, curr_S_2);
-			prev_S_2 = xt::eval(curr_S_2 + solver_dt * (S_2_dot));
-
-			std::cout << prev_S_2 << std::endl;
+			prev_S_2 = curr_S_2 + solver_dt * (S_2_dot);
 
 			// Step S1
 			xt::xarray<double> S_1_dot = -2.0 * xt::linalg::dot(Q, X_bar_d);
@@ -159,29 +155,10 @@ AvTrajectory IterativeLQR::solveTrajectory()
 			S_1_dot = S_1_dot + temp;
 			temp = xt::linalg::dot(xt::linalg::dot(curr_S_2, B_t), inv_R);
 			temp = xt::transpose(A_t) - xt::linalg::dot(temp, B_t_transp);
+
 			S_1_dot = S_1_dot + xt::linalg::dot(temp, curr_S_1);
-			prev_S_1 = xt::eval(curr_S_1 + solver_dt * (S_1_dot));
 
-			std::cout << prev_S_1 << std::endl;
-
-			// Step S0
-			xt::xarray<double> S_0_dot = xt::linalg::dot(Q, X_bar_d);
-			S_0_dot = xt::linalg::dot(X_bar_d_transp, S_0_dot);
-			temp = xt::linalg::dot(xt::transpose(curr_S_1), B_t);
-			temp = xt::linalg::dot(temp, U_bar_d);
-			S_0_dot = S_0_dot + temp;
-			temp = xt::linalg::dot(xt::transpose(curr_S_1), B_t);
-			temp = xt::linalg::dot(temp, inv_R);
-			temp = xt::linalg::dot(temp, B_t_transp);
-			temp = xt::linalg::dot(temp, curr_S_1);
-			S_0_dot = 0.25 * temp;
-			prev_S_0 = xt::eval(curr_S_0 + solver_dt * (S_0_dot));
-
-			std::cout << prev_S_0 << std::endl;
-
-			std::cout << S_2 << std::endl;
-			std::cout << S_1 << std::endl;
-			std::cout << S_0 << std::endl;
+			prev_S_1 = xt::squeeze(curr_S_1 + solver_dt * (S_1_dot));
 
 		}
 
