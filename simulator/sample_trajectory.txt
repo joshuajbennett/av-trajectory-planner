@@ -14,7 +14,7 @@
       "x" : 0,
       "y" : 0
    },
-   "max_iterations" : 10,
+   "max_iterations" : 3,
    "obstacles" : [
       {
          "dt" : 10,
