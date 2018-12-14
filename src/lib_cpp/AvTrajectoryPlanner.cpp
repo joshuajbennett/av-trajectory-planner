@@ -18,7 +18,16 @@ Planner::Planner(
 	, vehicle_config {config}
 	, vehicle_outline {av_outline}
 	, settings {solver_settings}
-{}
+{
+	if(settings.constrain_velocity)
+	{
+		std::cout << "Velocity clamping enabled." << std::endl;
+	}
+	if(settings.constrain_steering_angle)
+	{
+		std::cout << "Steering angle clamping enabled." << std::endl;
+	}
+}
 
 Planner::~Planner() {}
 
@@ -168,14 +177,14 @@ AvTrajectory Planner::solveTrajectory()
 	return std::move(ilqr.solveTrajectory());
 }
 
-AvState Planner::dynamics(AvState input, double turn_rate, double accel_f)
+AvState Planner::dynamics(AvState input, AvAction action)
 {
 	AvState output;
 	output.x = input.vel_f * cos(input.delta_f) * cos(input.psi);
 	output.y = input.vel_f * cos(input.delta_f) * sin(input.psi);
 	output.psi = input.vel_f * sin(input.delta_f);
-	output.delta_f = turn_rate;
-	output.vel_f = accel_f;
+	output.delta_f = action.turn_rate;
+	output.vel_f = action.accel_f;
 	return (std::move(output));
 }
 
@@ -188,7 +197,7 @@ AvState Planner::apply_dynamics(AvState input, AvState current_dynamics, double 
 
 AvState Planner::euler_step_unforced(AvState input, double dt)
 {
-	AvState current_dynamics = dynamics(input, 0.0, 0.0);
+	AvState current_dynamics = dynamics(input, AvAction {0.0, 0.0});
 	return (std::move(apply_dynamics(input, current_dynamics, dt)));
 }
 

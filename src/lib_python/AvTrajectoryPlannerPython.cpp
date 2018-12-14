@@ -31,6 +31,11 @@ PYBIND11_MODULE(AvTrajectoryPlanner, m)
 		.def_readwrite("psi", &AvState::psi)
 		.def_readwrite("delta_f", &AvState::delta_f)
 		.def_readwrite("vel_f", &AvState::vel_f);
+	py::class_<AvAction>(m, "AvAction")
+		.def(py::init<>())
+		.def(py::init<double, double>())
+		.def_readwrite("turn_rate", &AvAction::turn_rate)
+		.def_readwrite("accel_f", &AvAction::accel_f);
 	py::class_<AvParams>(m, "AvParams")
 		.def(py::init<>())
 		.def(py::init<double, double, double, double, double>())

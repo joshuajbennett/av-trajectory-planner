@@ -13,8 +13,8 @@ parser.add_argument("--myWidth", type=int, default=1000, help="The width of the 
 parser.add_argument("--myHeight", type=int, default=500, help="The height of the simulator windows")
 parser.add_argument("--padding", type=int, default=3, help="The padding to the simulator in meters")
 
-args, unknown = parser.parse_known_args() 
-sys.argv[1:] = unknown 
+args, unknown = parser.parse_known_args()
+sys.argv[1:] = unknown
 
 from kivy.app import App
 from kivy.uix.widget import Widget
@@ -78,7 +78,7 @@ class Vehicle(Widget):
         self.outline = getTransformedOutlinePoints(trajectory, transformer)
         # self.height, self.width = getHeightWidthFromOutline(self.outline)
         self.points = getCurrPoints(float(start_pos[0]), float(start_pos[1]), self.outline)
-        
+
         # self.pos = [float(start_pos[0]), float(start_pos[1])]
 
     def move(self, transformer):
@@ -156,7 +156,7 @@ class Simulator(Widget):
 
         self.endVehicle.initialize(vehicleTrajectory, transformer)
         self.endVehicle.set_position(goalState.x, goalState.y, goalState.psi, transformer)
-        
+
 
     def draw_trajectory(self):
         for obstacle in self.obstacles:
@@ -218,7 +218,7 @@ class CoordinateTransformer(object):
         self.min_y = min_y
         self.windowHeight = windowHeight
         self.windowWidth = windowWith
-        
+
         scale_y = float(windowHeight)/float(max_y - min_y + 2*minPadding)
         scale_x = float(windowWith)/float(max_x - min_x + 2*minPadding)
         self.scale = min(scale_x, scale_y)

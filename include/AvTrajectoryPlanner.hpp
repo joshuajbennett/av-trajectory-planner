@@ -68,7 +68,7 @@ public:
 	av_structs::AvTrajectory solveTrajectory();
 
 private:
-	av_structs::AvState dynamics(av_structs::AvState input, double turn_rate, double accel_f);
+	av_structs::AvState dynamics(av_structs::AvState input, av_structs::AvAction action);
 
 	av_structs::AvState
 	apply_dynamics(av_structs::AvState input, av_structs::AvState current_dynamics, double);

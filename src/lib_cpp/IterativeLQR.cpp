@@ -60,7 +60,6 @@ AvTrajectory IterativeLQR::solveTrajectory()
 	// Initialize the desired trajectory (a trajectory of all goal states)
 	auto state = av_state_to_xtensor(initial_state);
 	auto goal = av_state_to_xtensor(goal_state);
-
 	state.reshape({1, 5});
 	goal.reshape({1, 5});
 
@@ -211,7 +210,6 @@ AvTrajectory IterativeLQR::solveTrajectory()
 		AvState av_state {X_nominal(t, AvState::X),
 						  X_nominal(t, AvState::Y),
 						  X_nominal(t, AvState::PSI),
-						  X_nominal(t, AvState::DELTA_F),
 						  X_nominal(t, AvState::VEL_F)};
 
 		// std::cout << av_state.x << ", " << av_state.y << std::endl;
@@ -224,52 +222,58 @@ AvTrajectory IterativeLQR::solveTrajectory()
 
 xt::xarray<double> IterativeLQR::linearized_dynamics(xt::xarray<double> state)
 {
-	double delta_f = state(AvState::DELTA_F);
 	double vel_f = state(AvState::VEL_F);
+	double delta_f = state(AvState::DELTA_F);
+	double del_vel_f = 1.0;
+	double del_delta_f = 1.0;
+
 	if(settings.constrain_steering_angle)
 	{
-		std::cout << "HEY!" << std::endl;
 		delta_f = 2.0 * vehicle_config.max_delta_f * (sigmoid(delta_f - 1.0 / 2.0));
+		del_delta_f = 2.0 * vehicle_config.max_delta_f * sigmoid(state(AvState::DELTA_F)) *
+					  (1.0 - sigmoid(state(AvState::DELTA_F)));
 	}
 	if(settings.constrain_velocity)
 	{
-		std::cout << "HEY!" << std::endl;
 		vel_f = 1.5 * vehicle_config.max_vel_f * (sigmoid(vel_f - 1.0 / 3.0));
+		del_vel_f = 1.5 * vehicle_config.max_vel_f * sigmoid(state(AvState::VEL_F)) *
+					(1.0 - sigmoid(state(AvState::VEL_F)));
 	}
-	xt::xarray<double> output {{0,
-								0,
-								-vel_f * cos(delta_f) * sin(state(AvState::PSI)),
-								-vel_f * sin(delta_f) * cos(state(AvState::PSI)),
-								cos(delta_f) * cos(state(AvState::PSI))},
-							   {0,
-								0,
-								vel_f * cos(delta_f) * cos(state(AvState::PSI)),
-								-vel_f * sin(delta_f) * sin(state(AvState::PSI)),
-								cos(delta_f) * sin(state(AvState::PSI))},
-							   {0,
-								0,
-								0,
-								(vel_f * cos(delta_f)) / (vehicle_config.l_r + vehicle_config.l_f),
-								sin(delta_f) / (vehicle_config.l_r + vehicle_config.l_f)},
-							   {0, 0, 0, 0, 0},
-							   {0, 0, 0, 0, 0}};
+	xt::xarray<double> output {
+		{0,
+		 0,
+		 -vel_f * cos(delta_f) * sin(state(AvState::PSI)),
+		 -vel_f * del_delta_f * sin(delta_f) * cos(state(AvState::PSI)),
+		 del_vel_f * cos(delta_f) * cos(state(AvState::PSI))},
+		{0,
+		 0,
+		 vel_f * cos(delta_f) * cos(state(AvState::PSI)),
+		 -vel_f * del_delta_f * sin(delta_f) * sin(state(AvState::PSI)),
+		 del_vel_f * cos(delta_f) * sin(state(AvState::PSI))},
+		{
+			0,
+			0,
+			0,
+			(vel_f * del_delta_f * cos(delta_f)) / (vehicle_config.l_r + vehicle_config.l_f),
+			(del_vel_f * sin(delta_f)) / (vehicle_config.l_r + vehicle_config.l_f),
+		},
+		{0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0}};
 	return (std::move(output));
 }
 
 xt::xarray<double> IterativeLQR::dynamics(xt::xarray<double> state, xt::xarray<double> input)
 {
-	double delta_f = state(AvState::DELTA_F);
 	double vel_f = state(AvState::VEL_F);
+	double delta_f = state(AvState::DELTA_F);
 	double scaled_max_delta_f = 2.0 * vehicle_config.max_delta_f;
 	double scaled_max_vel_f = 1.5 * vehicle_config.max_vel_f;
 	if(settings.constrain_steering_angle)
 	{
-		std::cout << "HEY!" << std::endl;
 		delta_f = scaled_max_delta_f * (sigmoid(delta_f - 1.0 / 2.0));
 	}
 	if(settings.constrain_velocity)
 	{
-		std::cout << "HEY!" << std::endl;
 		vel_f = scaled_max_vel_f * (sigmoid(vel_f - 1.0 / 3.0));
 	}
 	xt::xarray<double> output {vel_f * cos(delta_f) * cos(state(AvState::PSI)),
